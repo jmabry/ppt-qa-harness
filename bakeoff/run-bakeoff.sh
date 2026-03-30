@@ -6,6 +6,11 @@ set -euo pipefail
 # Generates PPTX decks from identical prompts using 3 different Claude Code
 # skills, then renders outputs to images for side-by-side comparison.
 #
+# Directory structure:
+#   prompts/        — one .md file per deck topic (corporate, software, strategy)
+#   generators/     — gen scripts named {prompt}-{skill}.js
+#   outputs/        — PPTX + rendered images named {prompt}-{skill}.*
+#
 # Prerequisites:
 #   - claude CLI (Claude Code 2.x+)
 #   - npm (for pptxgenjs install)
@@ -14,7 +19,7 @@ set -euo pipefail
 #
 # Usage:
 #   ./run-bakeoff.sh setup          # clone skills, install deps
-#   ./run-bakeoff.sh generate [N]   # generate decks (optionally just prompt N)
+#   ./run-bakeoff.sh generate [N]   # generate decks (optionally filter by prompt name)
 #   ./run-bakeoff.sh render         # convert all PPTX to slide images
 #   ./run-bakeoff.sh summary        # print comparison summary
 #   ./run-bakeoff.sh clean          # remove generated outputs (keep prompts)
@@ -22,6 +27,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"
+GENERATORS_DIR="$SCRIPT_DIR/generators"
+OUTPUTS_DIR="$SCRIPT_DIR/outputs"
 VENDOR_DIR="$SCRIPT_DIR/.vendor"
 
 # Skill sources — cloned into .vendor/ during setup
@@ -30,7 +37,7 @@ MINIMAX_SKILL="$VENDOR_DIR/minimax-skills/skills/pptx-generator"
 ANTHROPIC_SKILL="$VENDOR_DIR/anthropic-skills/skills/pptx"
 
 SKILLS=(deck-builder minimax anthropic)
-PROMPTS=(01-creative 02-software 03-strategy)
+PROMPTS=(corporate software strategy)
 MAX_BUDGET="${BAKEOFF_MAX_BUDGET:-5}"  # USD per invocation
 
 # ---- Helpers ----
@@ -41,9 +48,9 @@ load_skill_docs() {
   local skill="$1"
   case "$skill" in
     deck-builder)
-      cat "$DECKBUILDER_SKILL/SKILL.md" \
-          "$DECKBUILDER_SKILL/architecture.md" \
-          "$DECKBUILDER_SKILL/pptxgenjs.md"
+      cat "$DECKBUILDER_SKILL/skill/SKILL.md" \
+          "$DECKBUILDER_SKILL/skill/architecture.md" \
+          "$DECKBUILDER_SKILL/skill/pptxgenjs.md"
       ;;
     minimax)
       if [ ! -f "$MINIMAX_SKILL/SKILL.md" ]; then
@@ -66,7 +73,7 @@ load_skill_docs() {
 
 cmd_setup() {
   log "Setting up bakeoff environment..."
-  mkdir -p "$VENDOR_DIR"
+  mkdir -p "$VENDOR_DIR" "$GENERATORS_DIR" "$OUTPUTS_DIR"
 
   # Clone MiniMax skill (MIT)
   if [ ! -d "$VENDOR_DIR/minimax-skills" ]; then
@@ -95,17 +102,11 @@ cmd_setup() {
     fi
   done
 
-  # Create output directories and install pptxgenjs
-  for skill in "${SKILLS[@]}"; do
-    for prompt in "${PROMPTS[@]}"; do
-      local dir="$SCRIPT_DIR/$skill/$prompt"
-      mkdir -p "$dir/output"
-      if [ ! -d "$dir/node_modules/pptxgenjs" ]; then
-        log "Installing pptxgenjs in $skill/$prompt..."
-        npm install --prefix "$dir" pptxgenjs 2>/dev/null
-      fi
-    done
-  done
+  # Install pptxgenjs at bakeoff root (shared by all generators)
+  if [ ! -d "$SCRIPT_DIR/node_modules/pptxgenjs" ]; then
+    log "Installing pptxgenjs..."
+    npm install --prefix "$SCRIPT_DIR" pptxgenjs 2>/dev/null
+  fi
 
   log "Setup complete."
 }
@@ -113,9 +114,10 @@ cmd_setup() {
 run_one() {
   local skill="$1"
   local prompt_name="$2"
-  local work_dir="$SCRIPT_DIR/$skill/$prompt_name"
-  local prompt_file="$PROMPTS_DIR/$prompt_name.md"
-  local log_file="$work_dir/generation.log"
+  local gen_file="$GENERATORS_DIR/${prompt_name}-${skill}.js"
+  local output_file="$OUTPUTS_DIR/${prompt_name}-${skill}.pptx"
+  local log_file="$OUTPUTS_DIR/${prompt_name}-${skill}.log"
+  local prompt_file="$PROMPTS_DIR/${prompt_name}.md"
 
   if [ ! -f "$prompt_file" ]; then
     log "ERROR: Prompt file not found: $prompt_file"
@@ -123,8 +125,8 @@ run_one() {
   fi
 
   # Skip if PPTX already exists
-  if ls "$work_dir"/output/*.pptx 1>/dev/null 2>&1; then
-    log "SKIP $skill/$prompt_name — PPTX already exists (use 'clean' to reset)"
+  if [ -f "$output_file" ]; then
+    log "SKIP $prompt_name-$skill — PPTX already exists (use 'clean' to reset)"
     return 0
   fi
 
@@ -134,25 +136,25 @@ run_one() {
   local prompt_text
   prompt_text=$(cat "$prompt_file")
 
-  log "START $skill/$prompt_name"
+  log "START $prompt_name-$skill"
 
   claude --print \
     --system-prompt "$skill_docs" \
     --allowedTools "Bash Write Read Glob Grep" \
     --max-budget-usd "$MAX_BUDGET" \
-    -d "$work_dir" \
+    -d "$SCRIPT_DIR" \
     "${prompt_text}
 
 Generate the deck as a Node.js script using pptxgenjs (already installed in node_modules/).
-Write the generator to gen-deck.js, run it, and save the .pptx to the output/ directory.
+Write the generator to generators/${prompt_name}-${skill}.js, run it, and save the .pptx to outputs/${prompt_name}-${skill}.pptx.
 Do not install any packages — pptxgenjs is pre-installed. Use require('pptxgenjs') — it resolves from node_modules/." \
     > "$log_file" 2>&1
 
   local exit_code=$?
-  if [ $exit_code -eq 0 ] && ls "$work_dir"/output/*.pptx 1>/dev/null 2>&1; then
-    log "DONE $skill/$prompt_name — $(ls "$work_dir"/output/*.pptx)"
+  if [ $exit_code -eq 0 ] && [ -f "$output_file" ]; then
+    log "DONE $prompt_name-$skill — $output_file"
   else
-    log "FAIL $skill/$prompt_name (exit=$exit_code) — see $log_file"
+    log "FAIL $prompt_name-$skill (exit=$exit_code) — see $log_file"
   fi
 }
 
@@ -197,35 +199,30 @@ cmd_generate() {
 cmd_render() {
   log "Rendering all PPTX files to images..."
 
-  for skill in "${SKILLS[@]}"; do
-    for prompt_name in "${PROMPTS[@]}"; do
-      local dir="$SCRIPT_DIR/$skill/$prompt_name/output"
-      for pptx in "$dir"/*.pptx; do
-        [ -f "$pptx" ] || continue
-        local base
-        base=$(basename "$pptx" .pptx)
+  for pptx in "$OUTPUTS_DIR"/*.pptx; do
+    [ -f "$pptx" ] || continue
+    local base
+    base=$(basename "$pptx" .pptx)
 
-        # Skip if already rendered
-        if ls "$dir"/slide-*.jpg 1>/dev/null 2>&1; then
-          log "SKIP render $skill/$prompt_name — images exist"
-          continue
-        fi
+    # Skip if already rendered
+    if ls "$OUTPUTS_DIR"/${base}-slide-*.jpg 1>/dev/null 2>&1; then
+      log "SKIP render $base — images exist"
+      continue
+    fi
 
-        log "Rendering $skill/$prompt_name..."
-        soffice --headless --convert-to pdf "$pptx" --outdir "$dir" 2>/dev/null || {
-          log "FAIL render $skill/$prompt_name"
-          continue
-        }
+    log "Rendering $base..."
+    soffice --headless --convert-to pdf "$pptx" --outdir "$OUTPUTS_DIR" 2>/dev/null || {
+      log "FAIL render $base"
+      continue
+    }
 
-        local pdf_file="$dir/$base.pdf"
-        if [ -f "$pdf_file" ]; then
-          pdftoppm -jpeg -r 150 "$pdf_file" "$dir/slide"
-          local count
-          count=$(ls "$dir"/slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
-          log "DONE render $skill/$prompt_name — $count slides"
-        fi
-      done
-    done
+    local pdf_file="$OUTPUTS_DIR/$base.pdf"
+    if [ -f "$pdf_file" ]; then
+      pdftoppm -jpeg -r 150 "$pdf_file" "$OUTPUTS_DIR/${base}-slide"
+      local count
+      count=$(ls "$OUTPUTS_DIR"/${base}-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
+      log "DONE render $base — $count slides"
+    fi
   done
 }
 
@@ -243,34 +240,27 @@ cmd_summary() {
     printf "  %-18s %8s %8s\n" "-----" "----" "------"
 
     for skill in "${SKILLS[@]}"; do
-      local dir="$SCRIPT_DIR/$skill/$prompt_name"
       local pptx_count=0
       local slide_count=0
-      [ -d "$dir" ] && pptx_count=$(find "$dir" -name "*.pptx" 2>/dev/null | wc -l | tr -d ' ')
-      [ -d "$dir" ] && slide_count=$(find "$dir" -name "slide-*.jpg" 2>/dev/null | wc -l | tr -d ' ')
+      [ -f "$OUTPUTS_DIR/${prompt_name}-${skill}.pptx" ] && pptx_count=1
+      slide_count=$(ls "$OUTPUTS_DIR"/${prompt_name}-${skill}-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
       printf "  %-18s %8s %8s\n" "$skill" "$pptx_count" "$slide_count"
     done
     echo ""
   done
 
   echo "To compare visually:"
-  echo "  open $SCRIPT_DIR/deck-builder/*/output/slide-*.jpg"
-  echo "  open $SCRIPT_DIR/minimax/*/output/slide-*.jpg"
-  echo "  open $SCRIPT_DIR/anthropic/*/output/slide-*.jpg"
+  echo "  open $OUTPUTS_DIR/*-deck-builder*.jpg"
+  echo "  open $OUTPUTS_DIR/*-minimax*.jpg"
+  echo "  open $OUTPUTS_DIR/*-anthropic*.jpg"
   echo ""
   echo "Score the results in: $SCRIPT_DIR/SCORECARD.md"
 }
 
 cmd_clean() {
   log "Cleaning generated outputs..."
-  for skill in "${SKILLS[@]}"; do
-    for prompt_name in "${PROMPTS[@]}"; do
-      local dir="$SCRIPT_DIR/$skill/$prompt_name"
-      rm -f "$dir"/output/*.pptx "$dir"/output/*.pdf "$dir"/output/slide-*.jpg
-      rm -f "$dir"/gen-*.js "$dir"/generation.log
-      log "Cleaned $skill/$prompt_name"
-    done
-  done
+  rm -f "$OUTPUTS_DIR"/*.pptx "$OUTPUTS_DIR"/*.pdf "$OUTPUTS_DIR"/*-slide-*.jpg "$OUTPUTS_DIR"/*.log
+  rm -f "$GENERATORS_DIR"/*.js
   log "Done. Run 'generate' to re-create."
 }
 
@@ -287,10 +277,15 @@ case "${1:-help}" in
     echo ""
     echo "Commands:"
     echo "  setup              Clone skill repos from GitHub, install pptxgenjs"
-    echo "  generate [filter]  Generate decks (filter: '01', 'creative', etc.)"
+    echo "  generate [filter]  Generate decks (filter: 'corporate', 'software', etc.)"
     echo "  render             Convert all PPTX to slide images via LibreOffice"
     echo "  summary            Print comparison of what was generated"
     echo "  clean              Remove generated files (keep prompts and deps)"
+    echo ""
+    echo "Directory structure:"
+    echo "  prompts/           Input prompts (corporate.md, software.md, strategy.md)"
+    echo "  generators/        Generated scripts ({prompt}-{skill}.js)"
+    echo "  outputs/           Output decks and renders ({prompt}-{skill}.pptx)"
     echo ""
     echo "Skills compared:"
     echo "  deck-builder  — this repo's skill (MIT)"

@@ -2,7 +2,7 @@
 
 ## Conditions
 
-All 12 decks were generated in a single pass using `claude --print` with each skill's docs injected as system prompt. **No QA loops ran** — subagents were denied Bash permission, so no skill got to render, inspect, or fix its output. Scores reflect first-pass generation quality only.
+All 9 decks were generated in a single pass using `claude --print` with each skill's docs injected as system prompt. **No QA loops ran** — subagents were denied Bash permission, so no skill got to render, inspect, or fix its output. Scores reflect first-pass generation quality only.
 
 **Scoring bias disclosure:** The deck-builder skill is this repo's own skill, and scoring was done by the same agent that built it. To mitigate this: (1) visual inspections were delegated to fresh subagents with no knowledge of which skill produced which deck, (2) specific slide screenshots are referenced so readers can verify scores against the actual outputs in `bakeoff/outputs/`, and (3) where my initial scores favored deck-builder, I re-examined by comparing equivalent slides side-by-side and adjusted.
 
@@ -30,14 +30,13 @@ Each deck is rated 1-5 on 5 dimensions (3 universal + 2 prompt-specific). Scores
 
 | Prompt                              | Dimension 1                                                                   | Dimension 2                                                       |
 | ----------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **00-corporate** (United Airlines)  | **Content accuracy** — real financials, plausible data, internal consistency   | **Data density** — charts, tables, KPI cards, metrics per slide   |
-| **01-creative** (Pasta)             | **Content quality** — accuracy, completeness, engaging tone                   | **Slide variety** — different layouts across slides vs repetitive |
-| **02-software** (Microservices)     | **Technical accuracy** — correct terminology, sound architecture              | **Data visualization** — diagrams, charts, flow representation   |
-| **03-strategy** (Board Review)      | **Executive presence** — would you show this to a board?                      | **Data density** — charts, tables, KPI cards, metrics             |
+| **corporate** (United Airlines)  | **Content accuracy** — real financials, plausible data, internal consistency   | **Data density** — charts, tables, KPI cards, metrics per slide  |
+| **software** (Microservices)     | **Technical accuracy** — correct terminology, sound architecture              | **Data visualization** — diagrams, charts, flow representation  |
+| **strategy** (Board Review)      | **Executive presence** — would you show this to a board?                      | **Data density** — charts, tables, KPI cards, metrics             |
 
 ---
 
-## Prompt 0: Corporate (United Airlines Investor Update) ★
+## Corporate (United Airlines Investor Update) ★
 
 This is the most representative real-world test — a data-dense 16-slide corporate investor deck generated from a long-form research document with specific financials, fleet data, and strategic metrics.
 
@@ -50,18 +49,7 @@ This is the most representative real-world test — a data-dense 16-slide corpor
 | Readability        | 4            | 3         | 3         | DB text is readable where present but chart labels lack units. MiniMax slide 15 is nearly illegible, slides 5/13 have low-contrast footnotes. Anthropic has pervasively small sub-text and footnotes across most slides. |
 | **Total**          | **18/25**    | **18/25** | **17/25** |                                                                                                                                                                  |
 
-## Prompt 1: Creative (Homemade Pasta)
-
-| Dimension          | deck-builder | MiniMax   | Anthropic | Notes                                                                                                                                           |
-| ------------------ | ------------ | --------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visual appeal      | 4            | 4         | 4         | All three chose warm earth tones. MiniMax has the boldest design (large "01" numbering, decorative circles). Anthropic's two-panel split is distinctive. DB's card layout is clean but more conventional. |
-| Content quality    | 5            | 4         | 5         | DB and Anthropic have specific, engaging copy with personality. MiniMax is accurate but slightly more generic.                                  |
-| Layout correctness | 4            | 3         | 4         | MiniMax slide 4 has text overflow past card boundary and low-contrast body text. DB has minor right-side cramping on shape slides. Anthropic is clean. |
-| Slide variety      | 3            | 4         | 4         | DB slides 4-6 share the same template (cards+bullets). MiniMax varies more between shape slides (numbered, 3-step process, different panel layouts). Anthropic varies between split-panel, cards, and grid. |
-| Readability        | 4            | 3         | 4         | MiniMax loses points for low-contrast tan-on-white body text on slides 4 and 6. DB and Anthropic are consistently readable.                     |
-| **Total**          | **20/25**    | **18/25** | **21/25** |                                                                                                                                                 |
-
-## Prompt 2: Software (Monolith to Microservices)
+## Software (Monolith to Microservices)
 
 | Dimension          | deck-builder | MiniMax   | Anthropic | Notes                                                                                                                                                                                    |
 | ------------------ | ------------ | --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,7 +60,7 @@ This is the most representative real-world test — a data-dense 16-slide corpor
 | Readability        | 3            | 4         | 3         | DB dark theme has small text + garbled heading. MiniMax yellow-on-navy is high contrast. Anthropic dark theme has small text and truncation.                                             |
 | **Total**          | **19/25**    | **18/25** | **18/25** |                                                                                                                                                                                          |
 
-## Prompt 3: Strategy (Q3 Board Review)
+## Strategy (Q3 Board Review)
 
 | Dimension          | deck-builder | MiniMax   | Anthropic | Notes                                                                                                                                                |
 | ------------------ | ------------ | --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -87,13 +75,13 @@ This is the most representative real-world test — a data-dense 16-slide corpor
 
 ## Overall
 
-| Skill            | 00-corporate | 01-creative | 02-software | 03-strategy | Grand Total  |
-| ---------------- | ------------ | ----------- | ----------- | ----------- | ------------ |
-| **deck-builder** | 18/25        | 20/25       | 19/25       | 23/25       | **80/100**   |
-| **MiniMax**      | 18/25        | 18/25       | 18/25       | 22/25       | **76/100**   |
-| **Anthropic**    | 17/25        | 21/25       | 18/25       | 22/25       | **78/100**   |
+| Skill            | corporate | software | strategy | Grand Total |
+| ---------------- | --------- | -------- | -------- | ----------- |
+| **deck-builder** | 18/25        | 19/25       | 23/25       | **60/75**   |
+| **MiniMax**      | 18/25        | 18/25       | 22/25       | **58/75**   |
+| **Anthropic**    | 17/25        | 18/25       | 22/25       | **57/75**   |
 
-**Takeaway:** The gap is narrow (80 vs 78 vs 76). Each skill wins in different areas. No skill dominates.
+**Takeaway:** The gap is narrow (60 vs 58 vs 57). Each skill wins in different areas. No skill dominates.
 
 ---
 
@@ -126,7 +114,6 @@ This is the most representative real-world test — a data-dense 16-slide corpor
 | Skill        | Deck          | Slide | Issue                                                                 |
 | ------------ | ------------- | ----- | --------------------------------------------------------------------- |
 | deck-builder | Microservices | 7     | Garbled/corrupted heading text ("A_N_E_R_T_H_R_G_E_S...")             |
-| MiniMax      | Pasta         | 4     | Text overflows card boundary; body text near-invisible (tan on white) |
 | MiniMax      | Microservices | 6     | Gantt chart "Monolith Retire" clipped at right edge                   |
 | MiniMax      | UAL           | 8, 10 | EWR airport code split across lines; % signs wrap to next line        |
 | MiniMax      | UAL           | 15    | ESG slide text nearly illegible (faded/small bullets in all 3 cards)  |
@@ -140,7 +127,6 @@ This is the most representative real-world test — a data-dense 16-slide corpor
 | ------------ | ------------- | -------- | -------------------------------------------------------------- |
 | deck-builder | UAL           | multiple | Excessive whitespace — content fills only 60-70% of slide      |
 | deck-builder | UAL           | 5, 7     | Chart axis labels missing units ($B, %)                        |
-| MiniMax      | Pasta         | 6        | Low-contrast body text in all three step cards                 |
 | MiniMax      | Microservices | 5        | "LIKELIHOOD" header wraps to "LIKELIHOO/D"                     |
 | MiniMax      | Board Review  | 12       | Cash Flow table truncated at bottom                            |
 | MiniMax      | UAL           | 12       | Leverage chart vs KPI card data inconsistency (3x vs 2.6x)    |
