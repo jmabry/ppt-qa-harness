@@ -4,36 +4,71 @@ A Claude Code skill for generating polished PPTX presentations with [pptxgenjs](
 
 ## Bakeoff Results
 
-Three skills compared on identical prompts. All 9 decks generated in a single pass with no QA loops — first-pass quality only.
+Three skills compared on 4 identical prompts (corporate investor update, creative cooking night, software architecture migration, board strategy review). All 12 decks generated in a single pass with no QA loops — first-pass quality only.
 
-| Skill | Creative (Pasta) | Software (Microservices) | Strategy (Board Review) | **Total** |
-|-------|-----------------|--------------------------|-------------------------|-----------|
-| **deck-builder** | 21/25 | 19/25 | 24/25 | **64/75** |
-| Anthropic pptx | 21/25 | 18/25 | 22/25 | 61/75 |
-| MiniMax pptx-generator | 18/25 | 18/25 | 22/25 | 58/75 |
+| Skill | Corporate (UAL) | Creative (Pasta) | Software (Microservices) | Strategy (Board Review) | **Total** |
+|-------|----------------|-----------------|--------------------------|-------------------------|-----------|
+| **deck-builder** | 18/25 | 20/25 | 19/25 | 23/25 | **80/100** |
+| Anthropic pptx | 17/25 | 21/25 | 18/25 | 22/25 | 78/100 |
+| MiniMax pptx-generator | 18/25 | 18/25 | 18/25 | 22/25 | 76/100 |
 
-Output decks: [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX and PDF for all 9 decks, side by side.
-Generator code: [`bakeoff/deck-builder/`](bakeoff/deck-builder/) — the JS that produced deck-builder's results.
+**The gap is narrow (80 vs 78 vs 76). No skill dominates. Each wins in different areas.**
+
+Scoring was done by the same agent that built deck-builder — see the [bias disclosure in the scorecard](bakeoff/SCORECARD.md#conditions).
+
+Output decks: [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX and PDF for all 12 decks, organized by prompt for side-by-side comparison.
 Full scoring: [`bakeoff/SCORECARD.md`](bakeoff/SCORECARD.md)
 
-## Known Shortcomings
+## How the skills differ
 
-From the bakeoff, deck-builder's first-pass generation has four recurring issues:
+### deck-builder — reliable structure, conservative visuals
 
-- **charSpacing bug** — garbled heading text on the microservices deck slide 7 (`charSpacing` applied incorrectly)
-- **Missing chart legends** — charts with multiple series rendered without axis labels or legends
-- **Dark background text** — body text at 10pt on dark themes is borderline too small; 11pt reads better
-- **No page number badges** — MiniMax adds a small numbered badge on every non-title slide; deck-builder doesn't
+This skill. Best at preventing bugs in 10+ slide decks through architectural patterns.
 
-These are fixable in the QA loop — the skill's mandatory render-inspect-fix pass is where they get caught and corrected.
+- **Architecture-first:** Three-layer pattern (constants → helpers → slides), Y-position chaining, config-driven templates
+- **Overflow prevention:** `fitBullets`, `trimText`, `checkFit`, `estimateLines` — automated content fitting pipeline with console reporting
+- **Mandatory QA loop:** LibreOffice render → subagent inspection → fix → re-render. Not optional.
+- **Fewest rendering bugs** in the bakeoff (1 critical defect across 46 slides vs 4-5 for competitors)
+- **Weaknesses:** Conservative layouts, underuses available slide space, limited chart variety, no page badges
 
-## Decision Guide
+Best for: **Decks where correctness matters more than visual ambition** — board reviews, status reports, anything where a text overflow or data error is worse than a plain layout.
 
-**Use deck-builder** if you need architecture patterns that scale (10+ slides, config-driven templates, overflow prevention) and want a mandatory QA loop.
+### [Anthropic pptx](https://github.com/anthropics/skills) — best writing, highest data density
 
-**Use MiniMax pptx-generator** if you want a built-in design system (18 color palettes, 4 style recipes) and don't need architectural guidance. Strong board-level content format ("3 wins / 2 concerns / 1 decision").
+Proprietary license. Covers both generation from scratch and XML editing of existing files.
 
-**Use Anthropic pptx** if you need to edit existing PPTX files (XML unpack/edit/repack workflow) or want the strongest writing quality on first pass.
+- **Strongest writing quality** — pasta deck copy has real personality; technique tips are specific and engaging
+- **Highest data density** — packs charts + tables + KPI cards onto every data slide
+- **XML editing workflow** — can unpack/edit/repack existing PPTX files (unique capability)
+- **Bold visual motifs** — dark/light sandwich, split panels, decorative corner blocks
+- **Weaknesses:** Pervasively small text (12+ of 16 slides on corporate prompt), data errors on dense decks, inconsistent theme switching
+
+Best for: **Editing existing presentations** (only skill that covers this), or when **writing quality and data density** matter more than layout reliability.
+
+### [MiniMax pptx-generator](https://github.com/MiniMax-AI/skills) — most visually ambitious, more breakage
+
+MIT license. Built-in design system with 18 color palettes and 4 style recipes.
+
+- **Most visually ambitious** — Gantt charts, progress bars, decorative shapes, dashboard layouts
+- **Built-in design system** — 18 palettes, Sharp/Soft/Rounded/Pill style recipes, page number badges
+- **Best space utilization** — fills slides with subtitles, additional metrics panels, callout boxes
+- **Textbook exec content** — "3 wins / 2 concerns / 1 decision" board summary format
+- **Weaknesses:** Most rendering defects (text overflow, wrapping bugs, illegible slides, table truncation), low-contrast body text
+
+Best for: **Visually distinctive presentations** where you want the first draft to look designed, and you're willing to fix more rendering issues in QA.
+
+## Known Shortcomings (deck-builder)
+
+From the bakeoff, deck-builder's first-pass generation has recurring issues:
+
+- **Excessive whitespace** — the biggest gap vs competitors. Data slides often fill only 60-70% of vertical space.
+- **charSpacing bug** — garbled heading text on the microservices deck slide 7
+- **Limited chart variety** — no waterfall, sparkline, progress bar, or gauge patterns
+- **Missing chart axis labels** — charts rendered without units ($B, %, x)
+- **No page number badges** — MiniMax adds these consistently
+- **Conservative visual style** — reliable but not visually striking
+
+These are fixable in the QA loop — the skill's mandatory render-inspect-fix pass catches and corrects them. But competitors produce more visually interesting first drafts.
 
 ## Why this exists
 
@@ -77,50 +112,31 @@ SKILL.md              # Skill entry point (Claude Code reads this first)
 architecture.md       # Three-layer pattern, Y-chaining, content fitting
 pptxgenjs.md          # API reference, pitfalls, helper patterns
 bakeoff/
-  outputs/            # All 9 output decks (PPTX + PDF, checked in)
+  outputs/            # All 12 output decks (PPTX + PDF, organized by prompt)
+    00-corporate/     # United Airlines investor update (16 slides)
+    01-creative/      # Homemade pasta cooking night (8 slides)
+    02-software/      # Monolith to microservices (10 slides)
+    03-strategy/      # Q3 board review (12 slides)
   deck-builder/       # Generators that produced deck-builder's bakeoff decks
-    01-creative/      # Homemade pasta — cards, two-column layouts
-    02-software/      # Monolith to microservices — diagrams, timeline bar
-    03-strategy/      # Q3 board review — KPI cards, charts, tables
-  prompts/            # Shared input prompts (01-03)
-  SCORECARD.md        # Scores, per-slide observations, bug list
+  prompts/            # Shared input prompts (00-03)
+  SCORECARD.md        # Scores, methodology, per-slide observations, bug list
   ORCHESTRATION.md    # How to re-run the bakeoff
 ```
 
-## Examples
+## Capability Comparison
 
-The `bakeoff/deck-builder/` generators are the canonical code reference — they produced the output decks above and demonstrate the architecture patterns on realistic prompts:
-
-- **`01-creative/gen-pasta-deck.js`** — warm palette, card templates, two-column layouts
-- **`02-software/gen-microservices-deck.js`** — dark theme, architecture diagram, phased timeline bar
-- **`03-strategy/gen-board-deck.js`** — KPI card grid, bar/line charts, exec summary tables
-
-Run any of them:
-
-```bash
-cd bakeoff/deck-builder/01-creative
-npm install pptxgenjs
-node gen-pasta-deck.js
-```
-
-Each follows the three-layer architecture from `architecture.md`: constants layer, helper functions that return next-Y for chaining, config-driven templates for repeated layouts.
-
-## How this compares
-
-| Capability | deck-builder-skill | [MiniMax pptx-generator](https://github.com/MiniMax-AI/skills) | Anthropic pptx |
+| Capability | deck-builder | [MiniMax](https://github.com/MiniMax-AI/skills) | [Anthropic](https://github.com/anthropics/skills) |
 |---|---|---|---|
 | **License** | MIT | MIT | Proprietary |
 | **Generation approach** | Single-file generator with helpers | Modular `slides/` dir + `compile.js` | Single-file or XML editing |
-| **Architecture guidance** | Three-layer pattern (constants, helpers, slides), Y-chaining, config-driven templates | 7-phase workflow, theme system | None (API tutorial only) |
-| **Overflow prevention** | `fitBullets`, `trimText`, `checkFit`, `estimateLines` | `fit:"shrink"` for titles | "Be careful with text" |
+| **Architecture guidance** | Three-layer pattern, Y-chaining, config-driven templates | 7-phase workflow, theme system | None (API tutorial only) |
+| **Overflow prevention** | `fitBullets`, `trimText`, `checkFit`, `estimateLines` | `fit:"shrink"` for titles | None |
 | **MIN_FONT enforcement** | Yes (9pt floor, split slides) | No | No |
-| **Content fitting pipeline** | Yes (automated with console reporting) | No | No |
-| **Design system** | Per-project (bakeoff generators show different palettes) | 18 built-in color palettes, 4 style recipes, component radius system | 10 color palettes, typography tables |
-| **Visual QA** | Mandatory LibreOffice render loop, subagent inspection, cross-slide consistency checks | markitdown content check, placeholder grep | Subagent visual inspection |
-| **Template editing** | Not covered (generation only) | XML unpack/edit/repack workflow | XML unpack/edit/repack workflow |
-| **Worked examples** | 3 generators (pasta, microservices, board review) | None included | None included |
-| **Pitfalls documented** | 8 (with JS fundamentals context) | 8+ (including async gotcha) | 8 |
-| **i18n support** | No | Yes (Chinese font handling) | No |
+| **Design system** | Per-project palettes | 18 palettes, 4 style recipes, component radius | 10 palettes, typography tables |
+| **Visual QA** | Mandatory render loop + subagent inspection | Content check + placeholder grep | Subagent visual inspection |
+| **Template editing** | Not covered | XML unpack/edit/repack | XML unpack/edit/repack |
+| **Worked examples** | 3 generators (bakeoff decks) | None included | None included |
+| **i18n support** | No | Yes (Chinese fonts) | No |
 
 ## Acknowledgments
 
