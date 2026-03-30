@@ -95,7 +95,7 @@ claude skill add jmabry/deck-builder-skill
 
 ### Manual
 
-Copy `SKILL.md`, `architecture.md`, and `pptxgenjs.md` into your project's `.claude/skills/deck-builder/` directory.
+Copy the `skill/` directory into your project as `.claude/skills/deck-builder/`.
 
 ## Dependencies
 
@@ -108,9 +108,10 @@ brew install --cask libreoffice   # macOS — required for visual QA
 ## Repo Structure
 
 ```
-SKILL.md              # Skill entry point (Claude Code reads this first)
-architecture.md       # Three-layer pattern, Y-chaining, content fitting
-pptxgenjs.md          # API reference, pitfalls, helper patterns
+skill/                # Install this directory as .claude/skills/deck-builder/
+  SKILL.md            # Skill entry point (Claude Code reads this first)
+  architecture.md     # Three-layer pattern, Y-chaining, content fitting
+  pptxgenjs.md        # API reference, pitfalls, helper patterns
 bakeoff/
   outputs/            # All 12 output decks (PPTX + PDF, organized by prompt)
     00-corporate/     # United Airlines investor update (16 slides)

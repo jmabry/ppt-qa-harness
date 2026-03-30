@@ -13,8 +13,8 @@ description: "Use this skill to create polished PPTX presentations from scratch 
 |------|-------|
 | Understand the approach | Read [architecture.md](architecture.md) first |
 | pptxgenjs API + patterns | Read [pptxgenjs.md](pptxgenjs.md) |
-| See working generators | [`bakeoff/deck-builder/`](bakeoff/deck-builder/) — pasta, microservices, board review |
-| See output quality | [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX + PDF for all three prompts |
+| See working generators | [`bakeoff/deck-builder/`](../bakeoff/deck-builder/) — pasta, microservices, board review |
+| See output quality | [`bakeoff/outputs/`](../bakeoff/outputs/) — PPTX + PDF for all three prompts |
 
 ## Known Issues (from bakeoff)
 
