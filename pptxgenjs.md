@@ -307,9 +307,9 @@ color: "E0503080"   // breaks (use opacity property instead)
 
 Without it, all items render on a single line. The last item in the array doesn't need it.
 
-### `lineSpacing` and bullets don't mix well
+### Shared mutable objects — a classic JS trap
 
-Setting `lineSpacing` on a bulleted text block adds spacing both between and within items, making the list look double-spaced. For vertical breathing room between bullets, use `paraSpaceAfter` on each item's options instead.
+JavaScript passes objects by reference. If a library function mutates the object you passed in, every other reference to that object sees the change. This is the same reason Vue requires `data()` to return a fresh object and why ESLint has the `no-param-reassign` rule. pptxgenjs is one of those libraries — it modifies option objects during rendering (converting measurement values internally). See the "Option objects get mutated" section below.
 
 ### One `pptxgen()` instance per deck
 
@@ -328,9 +328,13 @@ slide.addShape(pres.shapes.RECTANGLE, { ..., shadow: cardShadow() });
 slide.addShape(pres.shapes.RECTANGLE, { ..., shadow: cardShadow() });
 ```
 
-### Accent bars on rounded rectangles leave visible corners
+### `fit: "shrink"` for titles that might wrap
 
-If you layer a thin rectangular accent strip over a `ROUNDED_RECTANGLE`, the strip's square corners poke out. Either use `RECTANGLE` for the card shape, or skip the accent overlay pattern entirely.
+If a title could be longer than expected, pass `fit: "shrink"` to auto-reduce the font size rather than overflowing. Useful for config-driven templates where title length varies:
+
+```javascript
+slide.addText(cfg.title, { x: 0.5, y: 0.1, w: 8, h: 0.5, fontSize: 24, fit: "shrink" });
+```
 
 ### Tables with fixed `rowH` overflow silently
 
