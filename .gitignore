@@ -9,8 +9,13 @@ package.json
 !bakeoff/outputs/**/*.pptx
 !bakeoff/outputs/**/*.pdf
 
-# Bakeoff generated working dirs (generators + intermediate files)
-bakeoff/deck-builder/
+# Bakeoff: keep deck-builder generators (01-03), ignore working dirs and intermediates
+bakeoff/deck-builder/00-corporate/
+bakeoff/deck-builder/**/node_modules/
+bakeoff/deck-builder/**/package.json
+bakeoff/deck-builder/**/package-lock.json
+bakeoff/deck-builder/**/output/
+bakeoff/deck-builder/**/.DS_Store
 bakeoff/minimax/
 bakeoff/anthropic/
 

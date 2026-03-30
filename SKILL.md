@@ -13,7 +13,17 @@ description: "Use this skill to create polished PPTX presentations from scratch 
 |------|-------|
 | Understand the approach | Read [architecture.md](architecture.md) first |
 | pptxgenjs API + patterns | Read [pptxgenjs.md](pptxgenjs.md) |
-| See working examples | Browse `examples/` |
+| See working generators | [`bakeoff/deck-builder/`](bakeoff/deck-builder/) — pasta, microservices, board review |
+| See output quality | [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX + PDF for all three prompts |
+
+## Known Issues (from bakeoff)
+
+Watch for these in your own generators — the QA loop is where you catch and fix them:
+
+- **charSpacing garbles text** — applying `charSpacing` to heading text can produce corrupted output ("A_N_E_R_T_H_R_G_E_S..."). Use sparingly; verify in render.
+- **Charts need explicit legends** — pptxgenjs won't add axis labels or legends by default. Always set `showLegend: true` and `catAxisLabelFontSize` / `valAxisLabelFontSize`.
+- **Dark backgrounds need larger body text** — 10pt is borderline unreadable on navy/dark themes. Use 11pt minimum.
+- **No page badges by default** — if you want slide numbers on non-title slides, add an `addPageBadge()` helper explicitly.
 
 ---
 
