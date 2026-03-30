@@ -1,0 +1,33 @@
+I've written the complete generator script to `generators/corporate-anthropic.js` but I'm unable to execute it because the Bash tool hasn't been granted permission yet. 
+
+**To generate the presentation, please run:**
+```bash
+node generators/corporate-anthropic.js
+```
+
+This will create `outputs/corporate-anthropic.pptx`.
+
+**What the script creates — 18 slides:**
+
+| # | Slide | Layout |
+|---|-------|--------|
+| 1 | Title — UAL, NASDAQ ticker, Jan 20 2026 | Dark, accent bar, info footer |
+| 2 | Investment Thesis — 3-paragraph synthesis with stat sidebar | Dark with stat cards |
+| 3 | Multi-Year Financial Recovery — 7-row table + key context callout | Light with amber insight card |
+| 4 | FY2025 Quarterly P&L — full quarterly table + Q4 comp/guidance cards | Light, two insight cards |
+| 5 | Unit Economics Deep Dive — annual + quarterly tables, 3-column insight | Light, fuel sensitivity callout |
+| 6 | OpEx Composition — full cost table + 3 cards (labor/landing/distribution) | Light |
+| 7 | Regional Revenue Mix — annual + Q4 tables, MEIA/domestic insight cards | Light |
+| 8 | Revenue Quality — 5 stat cards + premium/loyalty detail columns | Light |
+| 9 | Fleet Modernization — stat cards, order book table, Boeing risk/gauge-up | Light |
+| 10 | New Product Architecture — 4 product cards (787 Elevated, Coastliner, XLR, CRJ450) | Light, 2×2 grid |
+| 11 | Starlink + Kinective Media — timeline + media network detail | Dark |
+| 12 | Operational Performance — stat cards + demand signals + ops detail | Light |
+| 13 | Balance Sheet & Deleveraging — leverage table + MileagePlus/IG cards | Light |
+| 14 | Cash Flow & Capital Allocation — CF table, buybacks, priority stack, FCF thesis | Light |
+| 15 | Sustainability — emissions + SAF tables, commitments + honest framing | Light |
+| 16 | 2026 Guidance & Risk Matrix — 6 guidance stats + risk table + bull case | Dark |
+| 17 | Appendix A — Hub network, workforce, labor contracts, fleet history, LT targets | Light |
+| 18 | Appendix B — Full quarterly unit economics, revenue quality, MileagePlus, routes | Light |
+
+**Design:** Midnight Executive palette (deep navy `1E2761` / ice blue `CADCFC` / bright blue accent `3B82F6`), Arial Black headers, Calibri body, card-based layouts with shadows and accent bars, alternating dark/light slide structure.

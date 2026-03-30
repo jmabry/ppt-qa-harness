@@ -2,87 +2,89 @@
 
 A Claude Code skill for generating polished PPTX presentations with [pptxgenjs](https://github.com/gitbrent/PptxGenJS).
 
+> **Honest caveat:** This skill documents real learnings from iterating on actual decks — the architecture patterns, overflow helpers, and QA loop all came from hitting real bugs in production. But learnings from one context don't automatically translate to a better general-purpose skill. The bakeoff shows deck-builder finishing last on first-pass quality against both competitors. The patterns help *when the QA loop runs*. If you're evaluating which skill to use, read the [bakeoff results](#bakeoff-results) before deciding.
+
 ## Bakeoff Results
 
-Three skills compared on 4 identical prompts (corporate investor update, creative cooking night, software architecture migration, board strategy review). All 12 decks generated in a single pass with no QA loops — first-pass quality only.
+Three skills compared on 3 identical prompts — all data-heavy professional decks (corporate investor update, software architecture migration, board strategy review). This is the hardest category for layout correctness: multi-column tables, dense KPI grids, and 16+ slides are exactly where layout bugs compound. All 9 decks generated in a single pass with no QA loops — first-pass quality only. Scored by visual inspection of LibreOffice-rendered slide images, blind to which skill produced each deck.
 
-| Skill | Corporate (UAL) | Creative (Pasta) | Software (Microservices) | Strategy (Board Review) | **Total** |
-|-------|----------------|-----------------|--------------------------|-------------------------|-----------|
-| **deck-builder** | 18/25 | 20/25 | 19/25 | 23/25 | **80/100** |
-| Anthropic pptx | 17/25 | 21/25 | 18/25 | 22/25 | 78/100 |
-| MiniMax pptx-generator | 18/25 | 18/25 | 18/25 | 22/25 | 76/100 |
+| Skill | Corporate (UAL) | Software (Microservices) | Strategy (Board Review) | **Total** |
+|-------|----------------|--------------------------|-------------------------|-----------|
+| **Anthropic pptx** | 21/25 | 23/25 | 22/25 | **66/75** |
+| MiniMax pptx-generator | 15/25 | 16/25 | 20/25 | **51/75** |
+| **deck-builder** | 15/25 | 15/25 | 10/25 | **40/75** |
 
-**The gap is narrow (80 vs 78 vs 76). No skill dominates. Each wins in different areas.**
+**Anthropic wins. deck-builder came last** — systematic layout failures across all three prompts (vertical table overflow on 4 strategy slides, font corruption on software slide 5, 40-50% blank space throughout the corporate deck). All are caught by the mandatory QA loop, but this bakeoff measured first-pass only. **Without QA, deck-builder is the least reliable of the three. With QA, it produces the fewest residual bugs.**
 
-Scoring was done by the same agent that built deck-builder — see the [bias disclosure in the scorecard](bakeoff/SCORECARD.md#conditions).
+Scoring blind to skill identity — see the [bias disclosure and full scoring in the scorecard](bakeoff/SCORECARD.md#conditions).
 
-Output decks: [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX and PDF for all 12 decks, organized by prompt for side-by-side comparison.
+Output decks: [`bakeoff/outputs/`](bakeoff/outputs/) — PPTX and PDF for all 9 decks.
 Full scoring: [`bakeoff/SCORECARD.md`](bakeoff/SCORECARD.md)
 
 ## How the skills differ
 
-### deck-builder — reliable structure, conservative visuals
-
-This skill. Best at preventing bugs in 10+ slide decks through architectural patterns.
-
-- **Architecture-first:** Three-layer pattern (constants → helpers → slides), Y-position chaining, config-driven templates
-- **Overflow prevention:** `fitBullets`, `trimText`, `checkFit`, `estimateLines` — automated content fitting pipeline with console reporting
-- **Mandatory QA loop:** LibreOffice render → subagent inspection → fix → re-render. Not optional.
-- **Fewest rendering bugs** in the bakeoff (1 critical defect across 46 slides vs 4-5 for competitors)
-- **Weaknesses:** Conservative layouts, underuses available slide space, limited chart variety, no page badges
-
-Best for: **Decks where correctness matters more than visual ambition** — board reviews, status reports, anything where a text overflow or data error is worse than a plain layout.
-
-### [Anthropic pptx](https://github.com/anthropics/skills) — best writing, highest data density
+### [Anthropic pptx](https://github.com/anthropics/skills) — best first-pass output, highest data density
 
 Proprietary license. Covers both generation from scratch and XML editing of existing files.
 
-- **Strongest writing quality** — pasta deck copy has real personality; technique tips are specific and engaging
-- **Highest data density** — packs charts + tables + KPI cards onto every data slide
+- **Best first-pass quality** — won all three prompts in the bakeoff (66/75 total)
+- **Highest data density** — 18-slide UAL deck with two full appendix slides, all packed with tables and KPI cards
+- **Bold visual motifs** — dark/light sandwich, left-border accent bars, colored severity badges
+- **Strong writing** — analytical narrative framing on context boxes, specific numbers throughout
 - **XML editing workflow** — can unpack/edit/repack existing PPTX files (unique capability)
-- **Bold visual motifs** — dark/light sandwich, split panels, decorative corner blocks
-- **Weaknesses:** Pervasively small text (12+ of 16 slides on corporate prompt), data errors on dense decks, inconsistent theme switching
+- **Weaknesses:** Minor right-edge column truncation on competitive/roadmap tables; some footnotes too small
 
-Best for: **Editing existing presentations** (only skill that covers this), or when **writing quality and data density** matter more than layout reliability.
+Best for: **First-pass quality without QA**, editing existing presentations, or when data density and visual polish matter most.
 
-### [MiniMax pptx-generator](https://github.com/MiniMax-AI/skills) — most visually ambitious, more breakage
+### [MiniMax pptx-generator](https://github.com/MiniMax-AI/skills) — most visually ambitious, inconsistent layout
 
 MIT license. Built-in design system with 18 color palettes and 4 style recipes.
 
-- **Most visually ambitious** — Gantt charts, progress bars, decorative shapes, dashboard layouts
-- **Built-in design system** — 18 palettes, Sharp/Soft/Rounded/Pill style recipes, page number badges
-- **Best space utilization** — fills slides with subtitles, additional metrics panels, callout boxes
-- **Textbook exec content** — "3 wins / 2 concerns / 1 decision" board summary format
-- **Weaknesses:** Most rendering defects (text overflow, wrapping bugs, illegible slides, table truncation), low-contrast body text
+- **Most visually ambitious** — progress bars, page badges, decorative shapes, dashboard layouts
+- **Built-in design system** — 18 palettes, Sharp/Soft/Rounded/Pill style recipes
+- **Best architecture diagrams** — hierarchical service diagram vs simple box chains in other skills
+- **Richer data coverage** — includes merge conflict rate, rollback rate, Phase confidence percentages
+- **Weaknesses:** Systematic right-column clipping on multi-year tables; title slide text stack collision; slides 4-5 broken in software deck
 
-Best for: **Visually distinctive presentations** where you want the first draft to look designed, and you're willing to fix more rendering issues in QA.
+Best for: **Visually distinctive presentations** when you're willing to fix column-width clipping issues in QA.
+
+### deck-builder — architecture patterns, QA-dependent
+
+This skill. Best at preventing bugs through mandatory render-inspect-fix loops — but worst first-pass quality of the three.
+
+- **Architecture-first:** Three-layer pattern (constants → helpers → slides), Y-position chaining, config-driven templates
+- **Overflow prevention:** `fitBullets`, `trimText`, `checkFit`, `estimateLines` — automated content fitting pipeline
+- **Mandatory QA loop:** LibreOffice render → subagent inspection → fix → re-render. Not optional.
+- **Weaknesses (first-pass):** Vertical table overflow bug (strategy slides 2-5 unreadable), font corruption on section labels (software slide 5), 40-50% blank space on 8+ corporate slides, arithmetic error in fuel sensitivity callout
+
+Best for: **Final-quality decks where the QA loop runs** — the mandatory render-inspect-fix pass catches all of the above. Without QA, this skill produces the least reliable output.
 
 ## Known Shortcomings (deck-builder)
 
-From the bakeoff, deck-builder's first-pass generation has recurring issues:
+From the bakeoff, deck-builder's first-pass generation has critical bugs:
 
-- **Excessive whitespace** — the biggest gap vs competitors. Data slides often fill only 60-70% of vertical space.
-- **charSpacing bug** — garbled heading text on the microservices deck slide 7
-- **Limited chart variety** — no waterfall, sparkline, progress bar, or gauge patterns
-- **Missing chart axis labels** — charts rendered without units ($B, %, x)
-- **No page number badges** — MiniMax adds these consistently
-- **Conservative visual style** — reliable but not visually striking
+- **Vertical table overflow** — when `colW` array doesn't sum to `w`, columns collapse to near-zero and text renders vertically (one character per line). Fix: assert `sum(colW) ≈ w` before every table call.
+- **charSpacing font corruption** — applying `charSpacing` to any text object produces garbled output ("OBERSMEBILITY STACK", "CRITIC AL"). Remove from all section labels.
+- **Excessive whitespace** — 40-50% blank lower halves on 8+ slides in the corporate deck. Add vertical fill check.
+- **Arithmetic errors** — fuel sensitivity stated as $40M (should be ~$400M). Verify calculations.
+- **Conservative visual style** — flat compared to Anthropic's motif-driven approach
 
-These are fixable in the QA loop — the skill's mandatory render-inspect-fix pass catches and corrects them. But competitors produce more visually interesting first drafts.
+All rendering bugs are caught by the mandatory QA loop. The skill is only as good as its QA discipline.
 
 ## Why this exists
 
-Most AI-assisted slide generation takes the wrong path: convert content to markdown, pipe it through a Python library, and hope the output looks professional. This fails in practice:
+This skill was built iteratively on real decks — board reviews, investor updates, technical architecture presentations. Each pattern in it came from hitting a real bug: Y-chaining came from cascading layout breaks when a table grew by one row, `fitBullets` came from text silently overflowing its box in LibreOffice, the QA loop came from realizing you can't see any of this without rendering.
 
-- **Markdown destroys intent.** Headings, bullets, and paragraphs are the only primitives. You lose layout control — columns, cards, callout boxes, positioned graphics — the moment you flatten to markdown.
-- **Python PPTX libraries are layout-blind.** python-pptx gives you XML manipulation, not visual design. You're computing EMU offsets and hoping for the best.
-- **Iteration is slow.** Generate, open PowerPoint, squint at the result, edit code, repeat. No fast feedback loop.
+That iteration produced genuine learnings. It didn't necessarily produce a better general-purpose skill.
 
-This skill takes a different approach:
+The bakeoff is the honest test: all three skills got the same prompts, the same constraints, no QA. deck-builder came last. The architecture patterns didn't prevent a `colW` summation bug that made 4 of 6 strategy slides unreadable, or a charSpacing call that garbled a section label. A skill built by a team with more design investment (Anthropic) or a richer built-in component library (MiniMax) produced better first-pass output. The patterns help — but only when the QA loop runs, and only for the failure modes they were designed to catch.
 
-- **JavaScript-first generation** with pptxgenjs — coordinates in inches, a clean API, and a Node.js runtime that's fast to iterate with.
-- **Architecture patterns that scale** — constants, helpers, and config-driven templates prevent the layout bugs that plague decks with 10+ slides.
-- **Mandatory visual QA** — LibreOffice renders the PPTX to images so you can actually see what you built before calling it done.
+**What the skill is actually good for:**
+
+- **Decks where correctness matters more than first-pass looks** — board reviews, data-dense investor updates, anything where a broken table or arithmetic error is worse than a plain layout
+- **Long decks (10+ slides)** — the three-layer pattern and Y-chaining compound over many slides; short decks don't stress the system enough to show the benefit
+- **Understanding what goes wrong** — the bakeoff generators and bugs are documented, so you can see exactly what breaks and why
+- **Running the full QA loop** — the mandatory render-inspect-fix pass is where this skill earns its keep; skip it and you'd be better off with Anthropic's skill
 
 ## Install
 
@@ -113,15 +115,12 @@ skill/                # Install this directory as .claude/skills/deck-builder/
   architecture.md     # Three-layer pattern, Y-chaining, content fitting
   pptxgenjs.md        # API reference, pitfalls, helper patterns
 bakeoff/
-  outputs/            # All 12 output decks (PPTX + PDF, organized by prompt)
-    00-corporate/     # United Airlines investor update (16 slides)
-    01-creative/      # Homemade pasta cooking night (8 slides)
-    02-software/      # Monolith to microservices (10 slides)
-    03-strategy/      # Q3 board review (12 slides)
-  deck-builder/       # Generators that produced deck-builder's bakeoff decks
-  prompts/            # Shared input prompts (00-03)
+  outputs/            # All 9 output decks (PPTX + rendered slide images)
+                      # {prompt}-{skill}.pptx  (corporate, software, strategy × 3 skills)
+  generators/         # Generator scripts ({prompt}-{skill}.js)
+  prompts/            # Shared input prompts (corporate.md, software.md, strategy.md)
   SCORECARD.md        # Scores, methodology, per-slide observations, bug list
-  ORCHESTRATION.md    # How to re-run the bakeoff
+  run-bakeoff.sh      # Harness to re-run the bakeoff
 ```
 
 ## Capability Comparison
@@ -136,7 +135,7 @@ bakeoff/
 | **Design system** | Per-project palettes | 18 palettes, 4 style recipes, component radius | 10 palettes, typography tables |
 | **Visual QA** | Mandatory render loop + subagent inspection | Content check + placeholder grep | Subagent visual inspection |
 | **Template editing** | Not covered | XML unpack/edit/repack | XML unpack/edit/repack |
-| **Worked examples** | 3 generators (bakeoff decks) | None included | None included |
+| **Worked examples** | 9 generators (3 prompts × 3 skills) | None included | None included |
 | **i18n support** | No | Yes (Chinese fonts) | No |
 
 ## Acknowledgments
