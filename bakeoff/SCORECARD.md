@@ -47,12 +47,12 @@ Each deck is rated 1-5 on 5 dimensions (3 universal + 2 prompt-specific).
 
 | Dimension          | Without harness | With harness | Notes |
 | ------------------ | --------------- | ------------ | ----- |
-| Visual appeal      | TBD             | TBD          |       |
-| Content accuracy   | TBD             | TBD          |       |
-| Layout correctness | TBD             | TBD          |       |
-| Data density       | TBD             | TBD          |       |
-| Readability        | TBD             | TBD          |       |
-| **Total**          | **TBD/25**      | **TBD/25**   |       |
+| Visual appeal      | 3               | 3            | Cohesive navy/gold palette, good title slide with KPI cards. Blank lower-thirds on many slides persist. |
+| Content accuracy   | 4               | 4            | Real UAL financials, plausible TRASM/CASM breakdowns, fleet data, CapEx timeline. Internal consistency strong. |
+| Layout correctness | 2               | 3            | Pre-QA: 8 issues. 5 fixed (targeted rendering bugs). Systemic blank space on 9+ slides remains — needs full layout refactor. |
+| Data density       | 3               | 3            | Tables and KPI cards present but blank lower halves waste space. Appendix slide (18) is well-packed. |
+| Readability        | 3               | 3            | Fonts adequate. Slide 14 title wraps to two lines, chart label clipped. Blank space not illegible, just wasteful. |
+| **Total**          | **15/25**       | **16/25**    |       |
 
 ## Software (Monolith to Microservices)
 
@@ -60,12 +60,12 @@ Each deck is rated 1-5 on 5 dimensions (3 universal + 2 prompt-specific).
 
 | Dimension          | Without harness | With harness | Notes |
 | ------------------ | --------------- | ------------ | ----- |
-| Visual appeal      | TBD             | TBD          |       |
-| Technical accuracy | TBD             | TBD          |       |
-| Layout correctness | TBD             | TBD          |       |
-| Data visualization | TBD             | TBD          |       |
-| Readability        | TBD             | TBD          |       |
-| **Total**          | **TBD/25**      | **TBD/25**   |       |
+| Visual appeal      | 4               | 4            | Dark tech theme with teal/cyan accents. Consistent across all 6 slides. Professional look. |
+| Technical accuracy | 4               | 4            | DORA metrics correctly cited, strangler fig rationale sound, squad ownership model realistic. |
+| Layout correctness | 2               | 4            | Pre-QA: 7 issues. All 7 fixed across 3 passes — CLEAN. Biggest improvement in the bakeoff. |
+| Data visualization | 3               | 4            | Tables render correctly post-fix. Color-coded legends, rejected/chosen badges on architecture decision slide. |
+| Readability        | 3               | 4            | Post-fix: clear hierarchy, comfortable font sizes, good contrast on dark background. |
+| **Total**          | **16/25**       | **20/25**    |       |
 
 ## Strategy (Q3 Board Review)
 
@@ -73,12 +73,12 @@ Each deck is rated 1-5 on 5 dimensions (3 universal + 2 prompt-specific).
 
 | Dimension          | Without harness | With harness | Notes |
 | ------------------ | --------------- | ------------ | ----- |
-| Visual appeal      | TBD             | TBD          |       |
-| Executive presence | TBD             | TBD          |       |
-| Layout correctness | TBD             | TBD          |       |
-| Data density       | TBD             | TBD          |       |
-| Readability        | TBD             | TBD          |       |
-| **Total**          | **TBD/25**      | **TBD/25**   |       |
+| Visual appeal      | 4               | 4            | Dark executive theme, strong use of red/green/orange for status. Board-ready color palette. |
+| Executive presence | 4               | 4            | Decision-driven: approve/discuss badges, key metrics front-and-center, board asks with financials. |
+| Layout correctness | 2               | 3            | Pre-QA: 5 issues. 3 fixed. Remaining: column clipping on slide 2, sub-9pt text and colW mismatch on slide 3, footnote overflow slide 4. |
+| Data density       | 5               | 5            | Extremely dense — KPIs, pipeline, churn, GTM, customer health all packed in 6 slides. |
+| Readability        | 2               | 3            | Slide 3 still too content-dense with sub-9pt text. Improved elsewhere. Should split slide 3. |
+| **Total**          | **17/25**       | **19/25**    |       |
 
 ---
 
@@ -86,37 +86,44 @@ Each deck is rated 1-5 on 5 dimensions (3 universal + 2 prompt-specific).
 
 | Prompt        | Without harness | With harness | Delta |
 | ------------- | --------------- | ------------ | ----- |
-| **corporate** | TBD/25          | TBD/25       | TBD   |
-| **software**  | TBD/25          | TBD/25       | TBD   |
-| **strategy**  | TBD/25          | TBD/25       | TBD   |
-| **Total**     | **TBD/75**      | **TBD/75**   | **TBD** |
+| **corporate** | 15/25           | 16/25        | +1    |
+| **software**  | 16/25           | 20/25        | +4    |
+| **strategy**  | 17/25           | 19/25        | +2    |
+| **Total**     | **48/75**       | **55/75**    | **+7** |
 
 ---
 
 ## Bugs Found
 
-### Without harness
+### Without harness (pre-QA state)
 
-*(Fill after running `./run-bakeoff.sh generate` and rendering)*
+Issues present in original generation before QA loop ran.
 
-| Deck | Slide(s) | Issue | Severity |
-| ---- | -------- | ----- | -------- |
-| — | — | — | — |
+| Deck | Issues | Summary |
+| ---- | ------ | ------- |
+| corporate | 8 | Blank lower-thirds on most slides, title overflow slide 14, chart label clip slide 14 |
+| software | 7 | Various layout/rendering issues across 6 slides |
+| strategy | 5 | Column clipping, sub-9pt text, footnote overflow |
+| smoketest | 0 | Clean from the start |
 
-### With harness
+### With harness (post-QA state)
 
-*(Fill after running `./run-bakeoff.sh harness` and rendering)*
+Remaining issues after max 3 QA passes.
 
-| Deck | Slide(s) | Issue | Notes |
-| ---- | -------- | ----- | ----- |
-| — | — | — | — |
+| Deck | Remaining | Summary |
+| ---- | --------- | ------- |
+| corporate | 11 | Systemic blank space (9+ slides) — needs full layout refactor. Title wrap + chart clip on slide 14. |
+| software | 0 | CLEAN — all 7 issues fixed in 3 passes |
+| strategy | 4 | Slide 2 "Trend" column clipped, slide 3 sub-9pt text + colW mismatch, slide 4 footnote truncated |
+| smoketest | 0 | CLEAN — no issues to begin with |
 
 ---
 
-## What the harness caught
+## What the harness caught and fixed
 
-*(Fill after both runs — which bugs were present without harness but fixed with harness)*
-
-| Deck | Slide(s) | Bug | Fixed by harness? |
-| ---- | -------- | --- | ----------------- |
-| — | — | — | — |
+| Deck | Issues found | Issues fixed | Key fixes |
+| ---- | ------------ | ------------ | --------- |
+| corporate | 8 | 5 | Targeted rendering bugs fixed; systemic blank space correctly identified but too structural for iterative fixes |
+| software | 7 | 7 | All layout/rendering issues resolved — tables, overflow, clipping all corrected |
+| strategy | 5 | 3 | Partial improvement; remaining issues are content-density problems (slide 3 needs to split) |
+| smoketest | 0 | 0 | N/A |

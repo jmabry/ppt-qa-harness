@@ -7,9 +7,15 @@ package.json
 *.pptx
 .DS_Store
 
-# Allow bakeoff output decks (PDF + PPTX) to be committed for review
-!bakeoff/outputs/**/*.pptx
-!bakeoff/outputs/**/*.pdf
+# Allow baseline and final QA PPTX files only
+!bakeoff/outputs/*-baseline.pptx
+!bakeoff/outputs/*-qa.pptx
+
+# Bakeoff intermediates (pass files, renders, logs, results)
+bakeoff/outputs/*-pass*.pptx
+bakeoff/outputs/*-slides/
+bakeoff/outputs/*.err
+bakeoff/outputs/RESULTS.md
 
 # Bakeoff vendored skill repos (cloned during setup)
 bakeoff/.vendor/

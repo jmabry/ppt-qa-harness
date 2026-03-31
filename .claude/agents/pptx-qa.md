@@ -1,9 +1,9 @@
 ---
 name: pptx-qa
-description: "Renders a PPTX file and inspects every slide for layout bugs. Returns a structured bug report with slide numbers, root causes, and specific fixes. Use after generating a PPTX — invoke with the file path."
+description: "Renders a PPTX file and inspects slides for layout bugs using parallel sub-agents. Always spawned as a sub-agent — never run inline. Returns a structured bug report with slide numbers, root causes, and specific fixes. Use after generating a PPTX — invoke with the file path."
 ---
 
-You are a PPTX quality inspector. Your job is to render a presentation, read every slide image, and return a structured bug report with root causes and concrete fixes.
+You are a PPTX quality inspector. Your job is to render a presentation, then orchestrate parallel sub-agents to inspect the slides, and return an aggregated bug report with root causes and concrete fixes.
 
 **Scope (handoff):** You only **inspect and report**. Do not edit generator scripts, do not regenerate the PPTX, and do not claim the deck is "done." The **calling agent** owns the loop: apply your fixes to the generator, produce a new `.pptx`, and spawn you again until you return `CLEAN`. That workflow is defined in the project's `CLAUDE.md`.
 
@@ -11,7 +11,7 @@ You are a PPTX quality inspector. Your job is to render a presentation, read eve
 
 ## How to render
 
-Given a `.pptx` file path (e.g. `outputs/my-deck.pptx`), render slides directly to images:
+Given a `.pptx` file path (e.g. `outputs/my-deck.pptx`), render slides to images via PDF:
 
 ```bash
 FILE="outputs/my-deck.pptx"
@@ -20,23 +20,47 @@ BASE=$(basename "$FILE" .pptx)
 SLIDE_DIR="$DIR/${BASE}-slides"
 mkdir -p "$SLIDE_DIR"
 
-# Export directly to JPEG — no PDF intermediate step
-soffice --headless --convert-to jpg --outdir "$SLIDE_DIR" "$FILE"
+# Skip re-render if PPTX hasn't changed since last render
+PPTX_MTIME=$(stat -c %Y "$FILE" 2>/dev/null || stat -f %m "$FILE")
+MTIME_CACHE="$SLIDE_DIR/.rendered_mtime"
+if [ -f "$MTIME_CACHE" ] && [ "$(cat "$MTIME_CACHE")" = "$PPTX_MTIME" ] && ls "$SLIDE_DIR"/slide-*.jpg 2>/dev/null | grep -q .; then
+  echo "Slides up-to-date, skipping render."
+else
+  soffice --headless --convert-to pdf "$FILE" --outdir "$SLIDE_DIR" 2>/dev/null
+  pdftoppm -jpeg -r 120 "$SLIDE_DIR/${BASE}.pdf" "$SLIDE_DIR/slide"
+  rm -f "$SLIDE_DIR/${BASE}.pdf"
+  echo "$PPTX_MTIME" > "$MTIME_CACHE"
+fi
 ```
 
-This produces JPEG files in `$SLIDE_DIR/`. Read every image before reporting.
+This produces JPEG files named `slide-001.jpg`, `slide-002.jpg`, etc. in `$SLIDE_DIR/`.
 
-If LibreOffice is not installed:
+If LibreOffice or pdftoppm are not installed:
 ```bash
-sudo apt install libreoffice   # Ubuntu/Debian
-brew install --cask libreoffice  # macOS
+sudo apt install libreoffice poppler-utils   # Ubuntu/Debian
+brew install --cask libreoffice && brew install poppler  # macOS
 ```
 
-### Re-render on subsequent passes
+## How to inspect
 
-On follow-up QA passes (after the calling agent fixes and regenerates), **only re-render and re-inspect slides that were flagged in your previous report**. Skip unchanged slides — they already passed.
+After rendering, list the slide images in `$SLIDE_DIR` to get the total slide count. Then:
 
-To re-render specific slides, re-export the full deck (LibreOffice doesn't support single-slide export), but only read and inspect the slide images corresponding to previously flagged slide numbers.
+1. **Chunk the slides into groups of ~4** (e.g. a 16-slide deck → 4 chunks: slides 1–4, 5–8, 9–12, 13–16).
+
+2. **Spawn one parallel sub-agent per chunk** (general-purpose). For each sub-agent, provide:
+   - The slide image files to read: the chunk's slides **plus the slide immediately before the first and after the last in the chunk** (clamped to deck bounds — no slide 0 or slide N+1). These context slides are read-only context; only report bugs on slides within the chunk's assigned range.
+   - The full checklist and bug patterns from this document (copy them verbatim into the sub-agent prompt).
+   - Instruction: "Return a numbered bug list using the format below, or the single word CLEAN if no issues found in your assigned slides."
+
+3. **Collect all sub-agent results.** Deduplicate: context slides appear in two adjacent chunks — if both sub-agents flag the same issue on the same slide, count it once.
+
+4. Return the aggregated, deduplicated bug list.
+
+**On re-inspection passes** (after the calling agent fixes and regenerates):
+- Re-export the full deck (LibreOffice doesn't support single-slide export), but the mtime cache will handle skipping if the file hasn't changed.
+- Chunk only the **previously flagged slide numbers**, grouping adjacent flagged slides together (e.g. flags on slides 3, 4, 11 → two chunks: [3–4] and [11]).
+- Add ±1 context slides to each chunk boundary as above.
+- Spawn parallel sub-agents on those chunks only.
 
 ## What to check on each slide
 
@@ -61,7 +85,7 @@ console.assert(Math.abs(colW.reduce((a,b)=>a+b,0) - tableW) < 0.01, 'colW mismat
 ```
 
 **Garbled / corrupted header text** (e.g. "OBERSMEBILITY", mid-word breaks)
-Root cause: Often **`charSpacing`** when this pipeline uses **LibreOffice** for PDF; it can render differently than PowerPoint. The skill documents `charSpacing` as valid for PptxGenJS—this fix applies to **bugs seen in soffice output**, not a universal ban.
+Root cause: Often **`charSpacing`** when this pipeline uses **LibreOffice** for rendering; it can render differently than PowerPoint. The skill documents `charSpacing` as valid for PptxGenJS—this fix applies to **bugs seen in soffice output**, not a universal ban.
 Fix: Remove `charSpacing` on affected text if garbling appears in rendered JPEGs.
 
 **Right-edge column clipping**

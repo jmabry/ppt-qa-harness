@@ -1,6 +1,6 @@
 {
   "prompts": ["smoketest", "corporate", "software", "strategy"],
-  "max_budget_usd": 10,
+  "max_budget_usd": 50,
   "claude_args": {
     "generate": {
       "allowed_tools": "Bash Write Read Glob Grep",
@@ -8,6 +8,10 @@
     },
     "harness": {
       "allowed_tools": "Bash Write Read Glob Grep Agent",
+      "permission_mode": null
+    },
+    "qa": {
+      "allowed_tools": "Bash Read Glob Grep Agent",
       "permission_mode": null
     }
   },
