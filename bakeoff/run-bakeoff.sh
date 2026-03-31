@@ -172,9 +172,10 @@ cmd_setup() {
 
 run_one() {
   local mode="$1" prompt_name="$2"
-  local tag="$( [ "$mode" = "harness" ] && echo "harness" || echo "anthropic" )"
+  local tag="$( [ "$mode" = "harness" ] && echo "qa" || echo "baseline" )"
   local output_file="$OUTPUTS_DIR/${prompt_name}-${tag}.pptx"
   local log_file="$OUTPUTS_DIR/${prompt_name}-${tag}.log"
+  local meta_file="$OUTPUTS_DIR/${prompt_name}-${tag}.meta.json"
   local prompt_file="$PROMPTS_DIR/${prompt_name}.md"
 
   if [ ! -f "$prompt_file" ]; then
@@ -196,19 +197,19 @@ run_one() {
 
   # Harness mode: append harness instructions + install agent
   if [ "$mode" = "harness" ]; then
-    local harness_instructions agents_dir="$SCRIPT_DIR/.claude/agents"
+    local harness_instructions
     harness_instructions=$(cat "$REPO_ROOT/CLAUDE.md")
     system_prompt="${system_prompt}
 
 ---
 
 ${harness_instructions}"
-    mkdir -p "$agents_dir"
-    cp "$CLAUDE_DIR/agents/pptx-qa.md" "$agents_dir/pptx-qa.md"
   fi
 
   build_claude_args "$mode"
-  log "START ${prompt_name}-${tag} — ${CLAUDE_CMD} ${CLAUDE_ARGS[*]}"
+  local start_ts
+  start_ts=$(date +%s)
+  log "START ${prompt_name}-${tag}"
 
   local exit_code=0
   (cd "$SCRIPT_DIR" && $CLAUDE_CMD "${CLAUDE_ARGS[@]}" \
@@ -218,20 +219,42 @@ ${harness_instructions}"
 Generate the deck as a Node.js script using pptxgenjs (already installed in node_modules/).
 Write the generator to generators/${prompt_name}-${tag}.js, run it, and save the .pptx to outputs/${prompt_name}-${tag}.pptx.
 Do not install any packages — pptxgenjs is pre-installed. Use require('pptxgenjs') — it resolves from node_modules/.
-If soffice or pdftoppm are not found, install them (apt install -y libreoffice poppler-utils). Use them to render and visually verify the output.") \
-    > "$log_file" 2>&1 || exit_code=$?
+If soffice or pdftoppm are not found, install them (apt install -y libreoffice poppler-utils). Use them to render and visually verify the output.
+Each time you regenerate the .pptx after QA fixes, copy the previous version to outputs/${prompt_name}-${tag}-pass{N}.pptx (pass1, pass2, ...) before overwriting, so every QA iteration is preserved.
+When finished, print a single JSON summary line: {\"qa_passes\": N, \"issues_found\": N, \"issues_fixed\": N, \"status\": \"CLEAN|REMAINING\"}") \
+    2>&1 | grep -v "^Checking for Claude updates" \
+    | grep -v "^Container already running" \
+    | grep -v "^Launching Claude" \
+    | grep -v "^Starting container" \
+    | grep -v "Sandbox disabled" \
+    | grep -v "Commands will run WITHOUT" \
+    | grep -v "^$" \
+    > "$log_file" || exit_code=$?
 
-  # Harness cleanup
-  if [ "$mode" = "harness" ]; then
-    rm -f "$SCRIPT_DIR/.claude/agents/pptx-qa.md"
-    rmdir "$SCRIPT_DIR/.claude/agents" 2>/dev/null || true
-    rmdir "$SCRIPT_DIR/.claude" 2>/dev/null || true
-  fi
+  local end_ts duration_s
+  end_ts=$(date +%s)
+  duration_s=$((end_ts - start_ts))
+  local qa_passes
+  qa_passes=$(ls "$OUTPUTS_DIR"/${prompt_name}-${tag}-pass*.pptx 2>/dev/null | wc -l | tr -d ' ')
+
+  # Write structured metadata
+  cat > "$meta_file" <<METAEOF
+{
+  "prompt": "${prompt_name}",
+  "mode": "${mode}",
+  "tag": "${tag}",
+  "duration_s": ${duration_s},
+  "qa_passes": ${qa_passes},
+  "exit_code": ${exit_code},
+  "pptx_produced": $([ -f "$output_file" ] && echo "true" || echo "false"),
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+METAEOF
 
   if [ $exit_code -eq 0 ] && [ -f "$output_file" ]; then
-    log "DONE ${prompt_name}-${tag} — $output_file"
+    log "DONE ${prompt_name}-${tag} — ${duration_s}s, ${qa_passes} QA passes"
   else
-    log "FAIL ${prompt_name}-${tag} (exit=$exit_code) — see $log_file"
+    log "FAIL ${prompt_name}-${tag} — ${duration_s}s (exit=$exit_code) — see $log_file"
   fi
 }
 
@@ -240,6 +263,13 @@ cmd_run() {
   if [ ! -d "$VENDOR_DIR" ]; then log "ERROR: Run '$0 setup' first"; exit 1; fi
   if [ "$mode" = "harness" ] && [ ! -f "$CLAUDE_DIR/agents/pptx-qa.md" ]; then
     log "ERROR: .claude/agents/pptx-qa.md not found"; exit 1
+  fi
+
+  # Install agent once before parallel runs (not per-run)
+  if [ "$mode" = "harness" ]; then
+    local agents_dir="$SCRIPT_DIR/.claude/agents"
+    mkdir -p "$agents_dir"
+    cp "$CLAUDE_DIR/agents/pptx-qa.md" "$agents_dir/pptx-qa.md"
   fi
 
   local pids=()
@@ -258,6 +288,14 @@ cmd_run() {
     for pid in "${pids[@]}"; do wait "$pid" || any_failed=1; done
     [ "$any_failed" -eq 1 ] && log "WARNING: some prompts failed — check logs"
   fi
+
+  # Clean up agent after all runs complete
+  if [ "$mode" = "harness" ]; then
+    rm -f "$SCRIPT_DIR/.claude/agents/pptx-qa.md"
+    rmdir "$SCRIPT_DIR/.claude/agents" 2>/dev/null || true
+    rmdir "$SCRIPT_DIR/.claude" 2>/dev/null || true
+  fi
+
   log "${mode} run complete."
 }
 
@@ -289,29 +327,33 @@ cmd_render() {
 cmd_summary() {
   echo ""
   echo "============================================"
-  echo "  BAKEOFF RESULTS — with vs without harness"
+  echo "  BAKEOFF RESULTS — baseline vs QA harness"
   echo "============================================"
   echo ""
 
-  printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "Prompt" "no-QA pptx" "no-QA slides" "no-QA renders?" "harness pptx" "harness slides" "harness renders?"
-  printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "------" "----------" "------------" "--------------" "------------" "--------------" "----------------"
+  printf "  %-15s %8s %8s %8s %8s %10s\n" "Prompt" "base" "base(s)" "qa" "qa(s)" "qa passes"
+  printf "  %-15s %8s %8s %8s %8s %10s\n" "-------" "----" "-------" "---" "-----" "---------"
 
   for prompt_name in "${PROMPTS[@]}"; do
-    local no_pptx=0 no_slides=0 h_pptx=0 h_slides=0
-    [ -f "$OUTPUTS_DIR/${prompt_name}-anthropic.pptx" ] && no_pptx=1
-    no_slides=$(ls "$OUTPUTS_DIR"/${prompt_name}-anthropic-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
-    [ -f "$OUTPUTS_DIR/${prompt_name}-harness.pptx" ] && h_pptx=1
-    h_slides=$(ls "$OUTPUTS_DIR"/${prompt_name}-harness-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
-    local no_qa h_qa
-    no_qa=$(grep -c "soffice\|pdftoppm\|QA\|render" "$OUTPUTS_DIR/${prompt_name}-anthropic.log" 2>/dev/null || echo 0)
-    h_qa=$(grep -c "soffice\|pdftoppm\|QA\|render" "$OUTPUTS_DIR/${prompt_name}-harness.log" 2>/dev/null || echo 0)
-    printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "$prompt_name" "$no_pptx" "$no_slides" "${no_qa}hits" "$h_pptx" "$h_slides" "${h_qa}hits"
+    local b_ok="—" b_dur="—" q_ok="—" q_dur="—" q_passes="—"
+
+    if [ -f "$OUTPUTS_DIR/${prompt_name}-baseline.meta.json" ]; then
+      b_ok=$(jq -r 'if .pptx_produced then "yes" else "FAIL" end' "$OUTPUTS_DIR/${prompt_name}-baseline.meta.json")
+      b_dur="$(jq -r '.duration_s' "$OUTPUTS_DIR/${prompt_name}-baseline.meta.json")s"
+    fi
+    if [ -f "$OUTPUTS_DIR/${prompt_name}-qa.meta.json" ]; then
+      q_ok=$(jq -r 'if .pptx_produced then "yes" else "FAIL" end' "$OUTPUTS_DIR/${prompt_name}-qa.meta.json")
+      q_dur="$(jq -r '.duration_s' "$OUTPUTS_DIR/${prompt_name}-qa.meta.json")s"
+      q_passes=$(jq -r '.qa_passes' "$OUTPUTS_DIR/${prompt_name}-qa.meta.json")
+    fi
+
+    printf "  %-15s %8s %8s %8s %8s %10s\n" "$prompt_name" "$b_ok" "$b_dur" "$q_ok" "$q_dur" "$q_passes"
   done
 
   echo ""
   echo "Generators:"
-  echo "  Without harness: $(ls $GENERATORS_DIR/*-anthropic.js 2>/dev/null | wc -l | tr -d ' ') files"
-  echo "  With harness:    $(ls $GENERATORS_DIR/*-harness.js 2>/dev/null | wc -l | tr -d ' ') files"
+  echo "  Baseline: $(ls $GENERATORS_DIR/*-baseline.js 2>/dev/null | wc -l | tr -d ' ') files"
+  echo "  QA:       $(ls $GENERATORS_DIR/*-qa.js 2>/dev/null | wc -l | tr -d ' ') files"
   echo ""
   echo "Score the results in: $SCRIPT_DIR/SCORECARD.md"
 }
@@ -330,7 +372,8 @@ cmd_all() {
 
 cmd_clean() {
   log "Cleaning outputs and generators..."
-  rm -f "$OUTPUTS_DIR"/*.pptx "$OUTPUTS_DIR"/*.pdf "$OUTPUTS_DIR"/*-slide-*.jpg "$OUTPUTS_DIR"/*.log
+  rm -f "$OUTPUTS_DIR"/*.pptx "$OUTPUTS_DIR"/*.pdf "$OUTPUTS_DIR"/*.jpg "$OUTPUTS_DIR"/*.log "$OUTPUTS_DIR"/*.meta.json
+  rm -rf "$OUTPUTS_DIR"/*-slides
   rm -f "$GENERATORS_DIR"/*.js
   log "Done."
 }

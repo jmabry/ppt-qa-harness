@@ -21,10 +21,10 @@ After generating a PPTX file:
 1. Spawn the `pptx-qa` agent with the output file path
 2. For every issue it reports, fix the generator and re-run
 3. Re-spawn `pptx-qa` on the new output
-4. Repeat until `pptx-qa` returns `CLEAN`
+4. Repeat until `pptx-qa` returns `CLEAN` — **maximum 3 QA iterations**
 5. Only then tell the user the deck is done
 
-Do not report success until you have a clean QA pass. A generated PPTX that has not been inspected is not done.
+If after 3 iterations issues remain, report what was fixed and what's still outstanding — do not loop further. Do not report success until you have a clean QA pass or have exhausted the iteration limit.
 
 ## Dependencies
 
