@@ -185,7 +185,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     });
     sld.addText(lbl, {
       x: i * sw + 0.05, y: 5.02, w: sw - 0.1, h: 0.26,
-      fontSize: 9, color: C.lightBlue, fontFace: 'Calibri Light', align: 'center',
+      fontSize: 8, color: C.lightBlue, fontFace: 'Calibri Light', align: 'center',
     });
   });
 }
@@ -274,7 +274,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addShape(prs.ShapeType.rect, { x: 0, y: 5.17, w: 10, h: 0.455, fill: { color: C.lightBlue } });
   sld.addText(
     'UAL enters 2026 with labor contracts settled, the largest delivery pipeline in its history, record booking trends, and a balance sheet on track for investment-grade — the convergence of tailwinds that have been building since 2022.',
-    { x: 0.3, y: 5.19, w: 9.4, h: 0.42, fontSize: 9, color: C.textDark, italic: true, valign: 'middle', wrap: true }
+    { x: 0.3, y: 5.19, w: 9.4, h: 0.42, fontSize: 8.5, color: C.textDark, italic: true, valign: 'middle', wrap: true }
   );
 }
 
@@ -306,12 +306,12 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   const barX0 = 0.55, barY0 = 3.6, barW = 9.2, barH = 0.72;
   const bw = barW / yrs.length - 0.09;
   sld.addText('Revenue ($B) — scaled to $65B', {
-    x: 0.55, y: 3.47, w: 6, h: 0.15, fontSize: 9, color: C.textLight, italic: true,
+    x: 0.55, y: 3.47, w: 6, h: 0.15, fontSize: 7.5, color: C.textLight, italic: true,
   });
   // Y-axis unit label
   sld.addText('Revenue ($B)', {
     x: 0.0, y: 3.55, w: 0.55, h: 0.72,
-    fontSize: 9, color: C.textLight, italic: true, align: 'center', valign: 'middle',
+    fontSize: 7, color: C.textLight, italic: true, align: 'center', valign: 'middle',
     rotate: 270,
   });
   yrs.forEach((yr, i) => {
@@ -326,10 +326,10 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     // Always place label inside bar (all bars tall enough at this scale)
     sld.addText('$' + revs[i] + 'B', {
       x: bx, y: by + 0.04, w: bw, h: 0.18,
-      fontSize: 9, color: i === 5 ? C.darkSlate : C.white, bold: true, align: 'center',
+      fontSize: 7, color: i === 5 ? C.darkSlate : C.white, bold: true, align: 'center',
     });
     sld.addText(yr, {
-      x: bx, y: barY0 + barH + 0.03, w: bw, h: 0.18, fontSize: 9, color: C.textMed, align: 'center',
+      x: bx, y: barY0 + barH + 0.03, w: bw, h: 0.18, fontSize: 7, color: C.textMed, align: 'center',
     });
   });
 
@@ -403,7 +403,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     });
     sld.addText(c.body, {
       x: x + 0.12, y: 4.26, w: 2.9, h: boxH - 0.4,
-      fontSize: 9, color: c.bg === C.navy ? C.white : C.darkSlate, wrap: true, valign: 'top',
+      fontSize: 8.5, color: c.bg === C.navy ? C.white : C.darkSlate, wrap: true, valign: 'top',
     });
   });
 }
@@ -417,7 +417,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   // Annual table
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 1.18, w: 2.5, h: 0.22, fill: { color: C.navy } });
-  sld.addText('Annual Trends', { x: 0.25, y: 1.18, w: 2.5, h: 0.22, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  sld.addText('Annual Trends', { x: 0.25, y: 1.18, w: 2.5, h: 0.22, fontSize: 8.5, bold: true, color: C.white, align: 'center', valign: 'middle' });
 
   const annualRows = [
     ['Year', 'TRASM', 'PRASM', 'CASM-ex', 'Fuel/Gal', 'Load Factor'],
@@ -432,7 +432,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   // Quarterly table
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 2.98, w: 2.8, h: 0.22, fill: { color: C.navy } });
-  sld.addText('2025 Quarterly', { x: 0.25, y: 2.98, w: 2.8, h: 0.22, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  sld.addText('2025 Quarterly', { x: 0.25, y: 2.98, w: 2.8, h: 0.22, fontSize: 8.5, bold: true, color: C.white, align: 'center', valign: 'middle' });
 
   const qRows = [
     ['Quarter', 'TRASM', 'PRASM', 'CASM-ex', 'Fuel/Gal', 'Load Factor'],
@@ -451,21 +451,21 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addShape(prs.ShapeType.rect, { x: 6.3, y: 1.18, w: 3.45, h: 1.32, fill: { color: C.lightBlue }, shadow: makeShadow() });
   sld.addText('TRASM –2.5% in 2025: NOT a demand problem', { x: 6.42, y: 1.23, w: 3.22, h: 0.3, fontSize: 9, bold: true, color: C.navy });
   sld.addText('Record 181M passengers. Industry capacity grew faster than unit revenue. Response: UAL pulled 4 ppts domestic capacity mid-year, retired 21 aircraft early.', {
-    x: 6.42, y: 1.54, w: 3.22, h: 0.9, fontSize: 9, color: C.textDark, wrap: true, valign: 'top',
+    x: 6.42, y: 1.54, w: 3.22, h: 0.9, fontSize: 8.5, color: C.textDark, wrap: true, valign: 'top',
   });
 
   // Fuel sensitivity
   sld.addShape(prs.ShapeType.rect, { x: 6.3, y: 2.62, w: 3.45, h: 0.82, fill: { color: C.gold }, shadow: makeShadow() });
   sld.addText('Unhedged by Policy', { x: 6.42, y: 2.67, w: 3.22, h: 0.25, fontSize: 9, bold: true, color: C.darkSlate });
   sld.addText('$0.10/gal = ~$466M annual P&L impact at 4.663B gallons consumed', {
-    x: 6.42, y: 2.93, w: 3.22, h: 0.46, fontSize: 9, color: C.darkSlate, wrap: true,
+    x: 6.42, y: 2.93, w: 3.22, h: 0.46, fontSize: 8.5, color: C.darkSlate, wrap: true,
   });
 
   // 2026 thesis
   sld.addShape(prs.ShapeType.rect, { x: 6.3, y: 3.55, w: 3.45, h: 1.95, fill: { color: C.navy }, shadow: makeShadow() });
   sld.addText('2026 Thesis', { x: 6.42, y: 3.6, w: 3.22, h: 0.28, fontSize: 9, bold: true, color: C.gold });
   sld.addText('TRASM inflects positive as industry capacity normalizes → CASM-ex stabilizes with aircraft deliveries → gap widens = margin expansion toward 10%+ pre-tax margin target', {
-    x: 6.42, y: 3.9, w: 3.22, h: 1.52, fontSize: 9, color: C.white, wrap: true, valign: 'top',
+    x: 6.42, y: 3.9, w: 3.22, h: 1.52, fontSize: 8.5, color: C.white, wrap: true, valign: 'top',
   });
 }
 
@@ -505,7 +505,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     sld.addShape(prs.ShapeType.rect, { x, y: 4.95, w: 3.12, h: 0.55, fill: { color: c.bg }, shadow: makeShadow() });
     sld.addText(c.lbl + ': ' + c.txt, {
       x: x + 0.1, y: 4.97, w: 2.95, h: 0.51,
-      fontSize: 9, color: c.bg === C.navyLight ? C.white : C.darkSlate, wrap: true, valign: 'middle',
+      fontSize: 7.8, color: c.bg === C.navyLight ? C.white : C.darkSlate, wrap: true, valign: 'middle',
     });
   });
 }
@@ -541,18 +541,18 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   spots.forEach((s, i) => {
     const x = 5.95;
-    const y = 1.18 + i * 1.02;
-    const boxH = i === 3 ? 1.25 : 0.95;
+    const y = 1.18 + i * 0.94;
+    const boxH = i === 3 ? 1.0 : 0.95;
     sld.addShape(prs.ShapeType.rect, { x, y, w: 3.8, h: boxH, fill: { color: s.color }, shadow: makeShadow() });
     sld.addText(s.region, { x: x + 0.12, y: y + 0.07, w: 3.6, h: 0.26, fontSize: 10, bold: true, color: s.color === C.lightBlue ? C.navy : C.gold });
-    sld.addText(s.txt, { x: x + 0.12, y: y + 0.35, w: 3.6, h: boxH - 0.39, fontSize: 9, color: s.color === C.lightBlue ? C.textDark : C.white, wrap: true, valign: 'top' });
+    sld.addText(s.txt, { x: x + 0.12, y: y + 0.35, w: 3.6, h: boxH - 0.39, fontSize: 8, color: s.color === C.lightBlue ? C.textDark : C.white, wrap: true, valign: 'top' });
   });
 
   // Growth drivers callout — fills the left-side empty region below the table
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 3.72, w: 5.5, h: 1.05, fill: { color: C.navyLight }, shadow: makeShadow() });
   sld.addText('2026 Route Expansion', { x: 0.37, y: 3.77, w: 5.28, h: 0.26, fontSize: 9.5, bold: true, color: C.gold });
   sld.addText('New routes in 2025–2026: EWR-Dubai (daily), EWR-Delhi (daily), SFO-Bangalore, SFO-Singapore (787-9 Elevated April 2026), ORD-Melbourne. Pacific + MEIA corridors represent the highest PRASM expansion opportunity in the portfolio.', {
-    x: 0.37, y: 4.05, w: 5.28, h: 0.68, fontSize: 11, color: C.white, wrap: true, valign: 'top',
+    x: 0.37, y: 4.05, w: 5.28, h: 0.68, fontSize: 8.5, color: C.white, wrap: true, valign: 'top',
   });
 
   // A321XLR callout — full-width, extended to fill slide bottom
@@ -584,7 +584,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   premStats.forEach(([lbl, val], i) => {
     const bg = i % 2 === 0 ? C.lightBlue : 'EDF4FB';
     sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 1.48 + i * 0.42, w: 4.5, h: 0.4, fill: { color: bg } });
-    sld.addText(lbl, { x: 0.35, y: 1.52 + i * 0.42, w: 2.8, h: 0.32, fontSize: 9, color: C.textDark, valign: 'middle' });
+    sld.addText(lbl, { x: 0.35, y: 1.52 + i * 0.42, w: 2.8, h: 0.32, fontSize: 8.5, color: C.textDark, valign: 'middle' });
     sld.addText(val, { x: 3.2, y: 1.52 + i * 0.42, w: 1.5, h: 0.32, fontSize: 9, bold: true, color: C.navy, align: 'right', valign: 'middle' });
   });
 
@@ -603,7 +603,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   loyaltyStats.forEach(([lbl, val], i) => {
     const bg = i % 2 === 0 ? C.lightBlue : 'EDF4FB';
     sld.addShape(prs.ShapeType.rect, { x: 5.0, y: 1.48 + i * 0.42, w: 4.75, h: 0.4, fill: { color: bg } });
-    sld.addText(lbl, { x: 5.1, y: 1.52 + i * 0.42, w: 3.2, h: 0.32, fontSize: 9, color: C.textDark, valign: 'middle' });
+    sld.addText(lbl, { x: 5.1, y: 1.52 + i * 0.42, w: 3.2, h: 0.32, fontSize: 8.5, color: C.textDark, valign: 'middle' });
     sld.addText(val, { x: 8.25, y: 1.52 + i * 0.42, w: 1.4, h: 0.32, fontSize: 9, bold: true, color: C.navy, align: 'right', valign: 'middle' });
   });
 
@@ -612,7 +612,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addText('MileagePlus Standalone Valuation Opportunity', { x: 0.4, y: 4.3, w: 9.2, h: 0.3, fontSize: 11, bold: true, color: C.darkSlate });
   sld.addText(
     'In 2020, bankers valued MileagePlus at ~$22B as loan collateral — and the program has grown since. UAL total market cap today: ~$28B. This implies minimal standalone loyalty value is priced in — a significant re-rating opportunity vs. the Delta/AmEx model. New April 2026: primary cardholders earn 2\u00d7 more miles; 10\u201315% discount on award redemptions.',
-    { x: 0.4, y: 4.62, w: 9.2, h: 0.75, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top' }
+    { x: 0.4, y: 4.62, w: 9.2, h: 0.75, fontSize: 8.5, color: C.darkSlate, wrap: true, valign: 'top' }
   );
 }
 
@@ -664,13 +664,13 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addShape(prs.ShapeType.rect, { x: 6.95, y: 2.72, w: 2.8, h: 1.2, fill: { color: C.lightBlue }, shadow: makeShadow() });
   sld.addText('Gauge-Up Impact', { x: 7.05, y: 2.77, w: 2.6, h: 0.28, fontSize: 9, bold: true, color: C.navy });
   sld.addText('Avg mainline seats/dep: 151 (2019) → 174 (2025). 50-seat RJs → 150+ seat mainline = 20% better fuel/seat, lower crew cost per passenger.', {
-    x: 7.05, y: 3.07, w: 2.6, h: 0.8, fontSize: 9, color: C.textDark, wrap: true, valign: 'top',
+    x: 7.05, y: 3.07, w: 2.6, h: 0.8, fontSize: 8, color: C.textDark, wrap: true, valign: 'top',
   });
 
   sld.addShape(prs.ShapeType.rect, { x: 6.95, y: 4.03, w: 2.8, h: 1.4, fill: { color: C.gold }, shadow: makeShadow() });
   sld.addText('Boeing Risk', { x: 7.05, y: 4.08, w: 2.6, h: 0.28, fontSize: 9, bold: true, color: C.darkSlate });
   sld.addText('FAA 38 MAX/month production cap. MAX 10 certification pending — 200 aircraft waiting. Each month delay = ~$30–40M deferred efficiency. Mitigation: A321neo/XLR Airbus orders provide operational hedge.', {
-    x: 7.05, y: 4.38, w: 2.6, h: 0.98, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top',
+    x: 7.05, y: 4.38, w: 2.6, h: 0.98, fontSize: 7.8, color: C.darkSlate, wrap: true, valign: 'top',
   });
 }
 
@@ -735,9 +735,9 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     sld.addShape(prs.ShapeType.rect, { x, y, w: bw, h: bh, fill: { color: p.color }, shadow: makeShadow() });
     sld.addShape(prs.ShapeType.rect, { x, y, w: bw, h: 0.32, fill: { color: C.gold } });
     sld.addText(p.name, { x: x + 0.12, y: y + 0.03, w: bw - 0.24, h: 0.28, fontSize: 10, bold: true, color: C.darkSlate });
-    sld.addText(p.when, { x: x + 0.12, y: y + 0.36, w: bw - 0.24, h: 0.22, fontSize: 9, color: C.goldLight, italic: true });
+    sld.addText(p.when, { x: x + 0.12, y: y + 0.36, w: bw - 0.24, h: 0.22, fontSize: 8, color: C.goldLight, italic: true });
     p.bullets.forEach((b, j) => {
-      sld.addText('\u2022  ' + b, { x: x + 0.15, y: y + 0.61 + j * 0.32, w: bw - 0.28, h: 0.3, fontSize: 9, color: C.white, wrap: true });
+      sld.addText('\u2022  ' + b, { x: x + 0.15, y: y + 0.61 + j * 0.32, w: bw - 0.28, h: 0.3, fontSize: 8.5, color: C.white, wrap: true });
     });
   });
 }
@@ -765,8 +765,8 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     const y = 1.52 + i * 0.48;
     const bg = i % 2 === 0 ? C.lightBlue : 'EDF4FB';
     sld.addShape(prs.ShapeType.rect, { x: 0.25, y, w: 4.5, h: 0.44, fill: { color: bg } });
-    sld.addText(dt, { x: 0.35, y: y + 0.04, w: 1.2, h: 0.36, fontSize: 9, bold: true, color: C.navy, valign: 'middle' });
-    sld.addText(txt, { x: 1.6, y: y + 0.04, w: 3.05, h: 0.36, fontSize: 9, color: C.textDark, valign: 'middle' });
+    sld.addText(dt, { x: 0.35, y: y + 0.04, w: 1.2, h: 0.36, fontSize: 8, bold: true, color: C.navy, valign: 'middle' });
+    sld.addText(txt, { x: 1.6, y: y + 0.04, w: 3.05, h: 0.36, fontSize: 8.5, color: C.textDark, valign: 'middle' });
   });
 
   // Right: Kinective Media
@@ -783,20 +783,20 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   kinAssets.forEach(([num, lbl], i) => {
     sld.addShape(prs.ShapeType.rect, { x: 5.0, y: 1.82 + i * 0.52, w: 4.75, h: 0.48, fill: { color: i % 2 === 0 ? C.lightBlue : 'EDF4FB' } });
     sld.addText(num, { x: 5.1, y: 1.87 + i * 0.52, w: 1.2, h: 0.36, fontSize: 14, bold: true, color: C.navy, align: 'center' });
-    sld.addText(lbl, { x: 6.35, y: 1.87 + i * 0.52, w: 3.3, h: 0.36, fontSize: 9, color: C.textDark, valign: 'middle' });
+    sld.addText(lbl, { x: 6.35, y: 1.87 + i * 0.52, w: 3.3, h: 0.36, fontSize: 8.5, color: C.textDark, valign: 'middle' });
   });
 
   // CFO quote
-  sld.addShape(prs.ShapeType.rect, { x: 5.0, y: 3.4, w: 4.75, h: 1.1, fill: { color: C.navy }, shadow: makeShadow() });
-  sld.addText('CFO on Q4 earnings call:', { x: 5.12, y: 3.44, w: 4.52, h: 0.22, fontSize: 11, bold: true, color: C.gold });
-  sld.addText('"Kinective will really start to accelerate in \'26 and beyond." Media margins dramatically higher than seat revenue. High-margin ad revenue changes the EBITDA profile in a way seat revenue cannot.', {
-    x: 5.12, y: 3.68, w: 4.52, h: 0.78, fontSize: 11, color: C.white, wrap: true, valign: 'top', italic: true,
+  sld.addShape(prs.ShapeType.rect, { x: 5.0, y: 3.4, w: 4.75, h: 1.05, fill: { color: C.navy }, shadow: makeShadow() });
+  sld.addText('CFO on Q4 earnings call:', { x: 5.12, y: 3.46, w: 4.52, h: 0.22, fontSize: 8, bold: true, color: C.gold });
+  sld.addText('"Kinective will really start to accelerate in \'26 and beyond." Media margins are dramatically higher than seat revenue margins. Even a few hundred million dollars of high-margin ad revenue changes the EBITDA profile in a way seat revenue cannot.', {
+    x: 5.12, y: 3.7, w: 4.52, h: 0.7, fontSize: 8, color: C.white, wrap: true, valign: 'top', italic: true,
   });
 
   // Bottom callout
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.58, w: 9.5, h: 0.87, fill: { color: C.gold } });
   sld.addText('Competitor Comparison: Delta has SkyMiles advertising. No competitor has UAL\'s level of integration between connectivity + behavioral data + programmatic capability. Market is currently valuing Kinective at approximately zero — a hidden asset not reflected in current multiples.', {
-    x: 0.4, y: 4.62, w: 9.2, h: 0.8, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'middle',
+    x: 0.4, y: 4.62, w: 9.2, h: 0.8, fontSize: 8.5, color: C.darkSlate, wrap: true, valign: 'middle',
   });
 }
 
@@ -829,7 +829,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     sld.addShape(prs.ShapeType.rect, { x, y, w: sw, h: sh, fill: { color: i % 2 === 0 ? C.navy : C.navyLight }, shadow: makeShadow() });
     sld.addText(s.val, { x: x + 0.1, y: y + 0.1, w: sw - 0.2, h: 0.5, fontSize: 26, bold: true, color: C.gold, align: 'center' });
     sld.addText(s.lbl, { x: x + 0.1, y: y + 0.62, w: sw - 0.2, h: 0.46, fontSize: 9, color: C.white, align: 'center', wrap: true });
-    sld.addText(s.sub, { x: x + 0.1, y: y + 1.12, w: sw - 0.2, h: 0.22, fontSize: 11, color: C.goldLight, align: 'center' });
+    sld.addText(s.sub, { x: x + 0.1, y: y + 1.12, w: sw - 0.2, h: 0.22, fontSize: 7.5, color: C.goldLight, align: 'center' });
   });
 
   // Early 2026 demand signals — positioned after grid
@@ -838,7 +838,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addText('Early 2026 Demand Signals — Real-Time Leading Indicators', { x: 0.4, y: demandY + 0.06, w: 9.2, h: 0.28, fontSize: 11, bold: true, color: C.darkSlate });
   sld.addText(
     'Week of Jan 4, 2026: Highest flown revenue week in UAL history.  |  Week of Jan 11, 2026: Highest ticketing week AND highest business sales week ever recorded simultaneously.\n\nBusiness travel leads leisure in recovery cycles — entering 2026 with record business bookings is the strongest real-time indicator that $12–$14 EPS guidance is achievable.',
-    { x: 0.4, y: demandY + 0.37, w: 9.2, h: 5.47 - demandY - 0.42, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top' }
+    { x: 0.4, y: demandY + 0.37, w: 9.2, h: 5.47 - demandY - 0.42, fontSize: 8.5, color: C.darkSlate, wrap: true, valign: 'top' }
   );
 }
 
@@ -873,7 +873,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     'Interest expense: $1.629B (2024) → $1.373B (2025) = –15.7% — flows straight to EPS',
   ];
   evts.forEach((e, i) => {
-    sld.addText('\u2022  ' + e, { x: 6.77, y: 1.55 + i * 0.43, w: 2.88, h: 0.4, fontSize: 9, color: C.textDark, wrap: true, valign: 'top' });
+    sld.addText('\u2022  ' + e, { x: 6.77, y: 1.55 + i * 0.43, w: 2.88, h: 0.4, fontSize: 8, color: C.textDark, wrap: true, valign: 'top' });
   });
 
   // IG impact callout
@@ -885,7 +885,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     '3. Multiple re-rating: COVID-risk narrative to investment-quality enterprise complete. Delta carries BBB-. UAL at 2.2\u00d7 leverage and falling — probability of upgrade is high. Question: own before or after the rating action.',
   ];
   igItems.forEach((it, i) => {
-    sld.addText(it, { x: 0.4, y: 4.52 + i * 0.28, w: 9.2, h: 0.26, fontSize: 9, color: C.darkSlate, wrap: true });
+    sld.addText(it, { x: 0.4, y: 4.52 + i * 0.28, w: 9.2, h: 0.26, fontSize: 8.5, color: C.darkSlate, wrap: true });
   });
 }
 
@@ -924,14 +924,14 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     sld.addShape(prs.ShapeType.rect, { x: 5.95, y, w: 0.35, h: 0.68, fill: { color: C.gold } });
     sld.addText(p.n, { x: 5.95, y, w: 0.35, h: 0.68, fontSize: 12, bold: true, color: C.darkSlate, align: 'center', valign: 'middle' });
     sld.addText(p.lbl, { x: 6.35, y: y + 0.05, w: 3.35, h: 0.25, fontSize: 9, bold: true, color: ['EDF4FB', C.lightBlue].includes(p.bg) ? C.navy : C.white });
-    sld.addText(p.txt, { x: 6.35, y: y + 0.31, w: 3.35, h: 0.33, fontSize: 9, color: ['EDF4FB', C.lightBlue].includes(p.bg) ? C.textDark : C.white, wrap: true });
+    sld.addText(p.txt, { x: 6.35, y: y + 0.31, w: 3.35, h: 0.33, fontSize: 7.8, color: ['EDF4FB', C.lightBlue].includes(p.bg) ? C.textDark : C.white, wrap: true });
   });
 
   // Post-2027 callout
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.22, w: 5.5, h: 1.2, fill: { color: C.gold }, shadow: makeShadow() });
   sld.addText('Post-2027 FCF Normalization Thesis', { x: 0.4, y: 4.27, w: 5.2, h: 0.3, fontSize: 10, bold: true, color: C.darkSlate });
   sld.addText('CapEx bulge persists through 2027. Post-2028 steady-state: $5–6B CapEx on $8–9B operating CF = $3–4B sustained FCF. At 320M shares = ~$10–12/share FCF. Airlines historically trade at 5–8\u00d7 FCF. At normalized FCF, current share price implies significant upside for investors who can look through the delivery cycle.', {
-    x: 0.4, y: 4.59, w: 5.2, h: 0.8, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top',
+    x: 0.4, y: 4.59, w: 5.2, h: 0.8, fontSize: 8, color: C.darkSlate, wrap: true, valign: 'top',
   });
 }
 
@@ -940,7 +940,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 // ════════════════════════════════════════════════════════════
 {
   const sld = contentSlide(prs);
-  addNavyHeader(sld, 'Sustainability: Honest Assessment & Commitments', 'Science-based targets; no greenwashing');
+  addNavyHeader(sld, 'Sustainability: Honest Assessment & Long-Term Commitments', 'Science-based targets; no greenwashing');
 
   // Left: Commitments
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 1.18, w: 4.5, h: 0.3, fill: { color: C.navy } });
@@ -953,7 +953,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   ];
   cmts.forEach((c, i) => {
     sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 1.52 + i * 0.42, w: 4.5, h: 0.38, fill: { color: i % 2 === 0 ? C.lightBlue : 'EDF4FB' } });
-    sld.addText('\u2022  ' + c, { x: 0.35, y: 1.55 + i * 0.42, w: 4.3, h: 0.32, fontSize: 9, color: C.textDark, wrap: true });
+    sld.addText('\u2022  ' + c, { x: 0.35, y: 1.55 + i * 0.42, w: 4.3, h: 0.32, fontSize: 8.5, color: C.textDark, wrap: true });
   });
 
   // Intensity trend
@@ -962,36 +962,73 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   // Y-axis unit label (rotated 90°)
   sld.addText('CO2e / M ASM', {
-    x: 0.25, y: 3.0, w: 0.95, h: 0.22,
-    fontSize: 9, color: C.textMed, bold: true, align: 'center',
+    x: 0.05, y: 3.15, w: 0.95, h: 0.9,
+    fontSize: 7.5, color: C.textMed, bold: true, align: 'center',
     rotate: 270,
   });
 
-  const intData = [['2021','187.5'], ['2022','176.2'], ['2023','169.0'], ['2024','167.3']];
-  const barW = 4.5 / intData.length - 0.12;
-  intData.forEach(([yr, val], i) => {
-    const norm = parseFloat(val) / 190;
-    const bh = 0.85 * norm;
-    const bx = 0.25 + i * (barW + 0.12);
-    const by = 3.1 + 0.85 * (1 - norm);
-    sld.addShape(prs.ShapeType.rect, { x: bx, y: by, w: barW, h: bh, fill: { color: i === 3 ? C.navy : C.lightBlue } });
-    // Data label above bar
-    sld.addText(val, { x: bx, y: by - 0.22, w: barW, h: 0.2, fontSize: 9, bold: true, color: i === 3 ? C.navy : C.navyLight, align: 'center' });
-    // Data label inside bar (near top)
-    if (bh > 0.22) {
-      sld.addText(val, { x: bx, y: by + 0.04, w: barW, h: 0.2, fontSize: 9, bold: true, color: i === 3 ? C.white : C.navy, align: 'center' });
-    }
-    sld.addText(yr, { x: bx, y: 3.97, w: barW, h: 0.18, fontSize: 9, color: C.textMed, align: 'center' });
-  });
-  // Legend for the bar chart colors
-  sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.15, w: 0.18, h: 0.12, fill: { color: C.lightBlue } });
-  sld.addText('2021–2023', { x: 0.46, y: 4.14, w: 1.1, h: 0.14, fontSize: 9, color: C.textLight });
-  sld.addShape(prs.ShapeType.rect, { x: 1.65, y: 4.15, w: 0.18, h: 0.12, fill: { color: C.navy } });
-  sld.addText('2024 (latest)', { x: 1.86, y: 4.14, w: 1.1, h: 0.14, fontSize: 9, color: C.textLight });
+  const chartLeft = 1.0;   // left edge of bars (room for y-axis labels)
+  const chartRight = 4.75; // right edge of bars
+  const chartWidth = chartRight - chartLeft; // 3.75"
+  const chartTop = 3.15;
+  const chartBottom = 4.30;
+  const chartHeight = chartBottom - chartTop; // 1.15"
 
-  // SAF table
-  sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.32, w: 4.5, h: 0.25, fill: { color: C.navy } });
-  sld.addText('SAF Progress', { x: 0.25, y: 4.32, w: 4.5, h: 0.25, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  // Y-axis scale: 0 to 200
+  const yMax = 200;
+  const yMin = 0;
+  const yRange = yMax - yMin;
+
+  // Y-axis horizontal grid lines and numeric scale labels
+  const yTicks = [0, 50, 100, 150, 200];
+  yTicks.forEach(tickVal => {
+    const tickY = chartBottom - ((tickVal - yMin) / yRange) * chartHeight;
+    // Grid line (light, across chart width)
+    sld.addShape(prs.ShapeType.line, {
+      x: chartLeft, y: tickY, w: chartWidth, h: 0,
+      line: { color: 'D0DCE8', width: 0.5 },
+    });
+    // Y-axis tick label
+    sld.addText(String(tickVal), {
+      x: chartLeft - 0.42, y: tickY - 0.10, w: 0.4, h: 0.20,
+      fontSize: 7.5, color: C.textMed, align: 'right', valign: 'middle',
+    });
+  });
+
+  const intData = [['2021','187.5'], ['2022','176.2'], ['2023','169.0'], ['2024','167.3']];
+  const nBars = intData.length;
+  const barSpacing = 0.10;
+  const barW = (chartWidth - barSpacing * (nBars + 1)) / nBars;
+
+  intData.forEach(([yr, val], i) => {
+    const norm = (parseFloat(val) - yMin) / yRange;
+    const bh = chartHeight * norm;
+    const bx = chartLeft + barSpacing + i * (barW + barSpacing);
+    const by = chartBottom - bh;
+
+    sld.addShape(prs.ShapeType.rect, { x: bx, y: by, w: barW, h: bh, fill: { color: i === 3 ? C.navy : C.lightBlue } });
+
+    // Data label above bar
+    sld.addText(val, { x: bx, y: by - 0.22, w: barW, h: 0.20, fontSize: 9, bold: true, color: i === 3 ? C.navy : C.navyLight, align: 'center' });
+
+    // Data label inside bar (near top) if bar is tall enough
+    if (bh > 0.22) {
+      sld.addText(val, { x: bx, y: by + 0.04, w: barW, h: 0.20, fontSize: 8, bold: true, color: i === 3 ? C.white : C.navy, align: 'center' });
+    }
+
+    // X-axis year label below bar
+    sld.addText(yr, { x: bx, y: chartBottom + 0.03, w: barW, h: 0.18, fontSize: 8, color: C.textMed, align: 'center' });
+  });
+
+  // Legend repositioned to match new chart bottom (was y=4.15, now y=4.52)
+  sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.52, w: 0.18, h: 0.12, fill: { color: C.lightBlue } });
+  sld.addText('2021–2023', { x: 0.46, y: 4.51, w: 1.1, h: 0.14, fontSize: 7.5, color: C.textLight });
+  sld.addShape(prs.ShapeType.rect, { x: 1.65, y: 4.52, w: 0.18, h: 0.12, fill: { color: C.navy } });
+  sld.addText('2024 (latest)', { x: 1.86, y: 4.51, w: 1.1, h: 0.14, fontSize: 7.5, color: C.textLight });
+
+  // SAF table repositioned to y=4.70 (was y=4.32)
+  sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.70, w: 4.5, h: 0.25, fill: { color: C.navy } });
+  sld.addText('SAF Progress', { x: 0.25, y: 4.70, w: 4.5, h: 0.25, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
   const safRows = [
     ['Year', 'SAF Gallons', 'CO2e Avoided'],
     ['2021', '0.6M', '5,953 MT'],
@@ -999,14 +1036,14 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     ['2023', '7.3M', '68,370 MT'],
     ['2024', '13.6M', '126,174 MT'],
   ];
-  styledTable(sld, safRows, 0.25, 4.57, 4.5, [1.0, 1.75, 1.75], 0.18, C.navyLight, C.white, C.white, C.textDark, 8);
+  styledTable(sld, safRows, 0.25, 4.95, 4.5, [1.0, 1.75, 1.75], 0.18, C.navyLight, C.white, C.white, C.textDark, 7.5);
 
   // Right: Honest Assessment
   sld.addShape(prs.ShapeType.rect, { x: 5.0, y: 1.18, w: 4.75, h: 2.1, fill: { color: C.gold }, shadow: makeShadow() });
   sld.addText('Honest Assessment for Institutional Investors', { x: 5.12, y: 1.23, w: 4.52, h: 0.3, fontSize: 10, bold: true, color: C.darkSlate });
   sld.addText(
     'Absolute emissions rising with capacity growth (Scope 1: +5.3% in 2024). 13.6M SAF gallons vs. 4.2B+ total consumed = <0.35%. The 2050 net zero target depends on technologies not yet at commercial scale (green hydrogen, next-gen SAF, carbon removal). The 2035 intensity target is achievable with newer aircraft. Do not model material near-term emissions reductions into the financial case.',
-    { x: 5.12, y: 1.57, w: 4.52, h: 1.65, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top' }
+    { x: 5.12, y: 1.57, w: 4.52, h: 1.65, fontSize: 8.5, color: C.darkSlate, wrap: true, valign: 'top' }
   );
 
   // Ventures
@@ -1019,7 +1056,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     'Eco-Skies Alliance: 50+ corporate partners co-investing in SAF supply',
   ];
   ventures.forEach((v, i) => {
-    sld.addText('\u2022  ' + v, { x: 5.12, y: 3.78 + i * 0.4, w: 4.52, h: 0.37, fontSize: 9, color: C.textDark, wrap: true });
+    sld.addText('\u2022  ' + v, { x: 5.12, y: 3.78 + i * 0.4, w: 4.52, h: 0.37, fontSize: 8.5, color: C.textDark, wrap: true });
   });
 }
 
@@ -1049,7 +1086,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 4.05, w: 5.5, h: 1.35, fill: { color: C.gold }, shadow: makeShadow() });
   sld.addText('Bull Case', { x: 0.4, y: 4.1, w: 5.2, h: 0.28, fontSize: 10.5, bold: true, color: C.darkSlate });
   sld.addText('If TRASM inflects positive in Q1–Q2 2026 as industry capacity tightens → tracking toward $14+ EPS → at current multiple = significant equity upside. 2019 EPS peak: $12.05. $14 would be first material all-time high.', {
-    x: 0.4, y: 4.4, w: 5.2, h: 0.95, fontSize: 9, color: C.darkSlate, wrap: true, valign: 'top',
+    x: 0.4, y: 4.4, w: 5.2, h: 0.95, fontSize: 8.5, color: C.darkSlate, wrap: true, valign: 'top',
   });
 
   // Risk matrix
@@ -1065,12 +1102,12 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
     { risk: 'Chase Re-contract', mag: '2029 — terms uncertain', mit: 'Delta/AmEx parity gives leverage' },
   ];
   risks.forEach((r, i) => {
-    const y = 1.52 + i * 0.58;
+    const y = 1.52 + i * 0.54;
     const bg = i % 2 === 0 ? 'FFF8EC' : C.lightBlue;
-    sld.addShape(prs.ShapeType.rect, { x: 6.0, y, w: 3.75, h: 0.54, fill: { color: bg } });
-    sld.addText(r.risk, { x: 6.1, y: y + 0.03, w: 1.4, h: 0.22, fontSize: 9, bold: true, color: C.navy });
-    sld.addText(r.mag, { x: 6.1, y: y + 0.26, w: 1.4, h: 0.24, fontSize: 9, color: C.textMed, wrap: true });
-    sld.addText(r.mit, { x: 7.55, y: y + 0.06, w: 2.12, h: 0.42, fontSize: 9, color: C.textDark, wrap: true, valign: 'middle' });
+    sld.addShape(prs.ShapeType.rect, { x: 6.0, y, w: 3.75, h: 0.5, fill: { color: bg } });
+    sld.addText(r.risk, { x: 6.1, y: y + 0.03, w: 1.15, h: 0.22, fontSize: 7.5, bold: true, color: C.navy });
+    sld.addText(r.mag, { x: 6.1, y: y + 0.25, w: 1.15, h: 0.2, fontSize: 7, color: C.textMed, wrap: true });
+    sld.addText(r.mit, { x: 7.28, y: y + 0.08, w: 2.4, h: 0.36, fontSize: 7.5, color: C.textDark, wrap: true, valign: 'middle' });
   });
 }
 
@@ -1114,7 +1151,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   styledTable(sld, rows, 0.25, 0.97, 9.5,
     [3.5, 2.0, 2.0, 2.0], 0.22,
-    C.navy, C.white, C.white, C.textDark, 8
+    C.navy, C.white, C.white, C.textDark, 7.8
   );
 }
 
@@ -1132,7 +1169,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
 
   // Annual unit economics
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 0.95, w: 3.0, h: 0.22, fill: { color: C.navyLight } });
-  sld.addText('Annual', { x: 0.25, y: 0.95, w: 3.0, h: 0.22, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  sld.addText('Annual', { x: 0.25, y: 0.95, w: 3.0, h: 0.22, fontSize: 8.5, bold: true, color: C.white, align: 'center', valign: 'middle' });
 
   const annRows = [
     ['Year', 'TRASM', 'PRASM', 'Yield', 'CASM', 'CASM-ex', 'Fuel/Gal', 'Load Factor'],
@@ -1142,12 +1179,12 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   ];
   styledTable(sld, annRows, 0.25, 1.17, 9.5,
     [1.0, 1.0, 1.0, 1.0, 1.0, 1.1, 1.1, 2.3], 0.28,
-    C.navy, C.white, C.white, C.textDark, 8
+    C.navy, C.white, C.white, C.textDark, 7.8
   );
 
   // Quarterly unit economics
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 2.4, w: 3.0, h: 0.22, fill: { color: C.navyLight } });
-  sld.addText('2025 Quarterly', { x: 0.25, y: 2.4, w: 3.0, h: 0.22, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  sld.addText('2025 Quarterly', { x: 0.25, y: 2.4, w: 3.0, h: 0.22, fontSize: 8.5, bold: true, color: C.white, align: 'center', valign: 'middle' });
 
   const qRows = [
     ['Quarter', 'TRASM', 'PRASM', 'Yield', 'CASM', 'CASM-ex', 'Fuel/Gal', 'Load Factor'],
@@ -1158,13 +1195,13 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   ];
   styledTable(sld, qRows, 0.25, 2.62, 9.5,
     [1.0, 1.0, 1.0, 1.0, 1.0, 1.1, 1.1, 2.3], 0.24,
-    C.navyLight, C.white, C.white, C.textDark, 8
+    C.navyLight, C.white, C.white, C.textDark, 7.8
   );
 
   // Fleet & workforce table — label spans full table width (4.5")
   // qRows: 5 rows × 0.24 = 1.20; table ends at 2.62 + 1.20 = 3.82; add 0.12" gap → fleet header at 3.94
   sld.addShape(prs.ShapeType.rect, { x: 0.25, y: 3.94, w: 4.5, h: 0.22, fill: { color: C.navy } });
-  sld.addText('Fleet & Workforce', { x: 0.25, y: 3.94, w: 4.5, h: 0.22, fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle' });
+  sld.addText('Fleet & Workforce', { x: 0.25, y: 3.94, w: 4.5, h: 0.22, fontSize: 8.5, bold: true, color: C.white, align: 'center', valign: 'middle' });
 
   const fleetRows = [
     ['Year', 'Fleet', 'Employees', 'Salaries ($B)'],
@@ -1176,7 +1213,7 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   ];
   styledTable(sld, fleetRows, 0.25, 4.16, 4.5,
     [0.8, 0.8, 1.3, 1.6], 0.20,
-    C.navy, C.white, C.white, C.textDark, 8
+    C.navy, C.white, C.white, C.textDark, 7.8
   );
 
   // CASM-ex reconciliation
@@ -1192,9 +1229,9 @@ prs.layout = 'LAYOUT_WIDE'; // 10 × 5.625
   ];
   recon.forEach((r, i) => {
     const bold = i === 0 || i === recon.length - 1;
-    sld.addText(r, { x: 5.12, y: 4.26 + i * 0.20, w: 4.52, h: 0.20, fontSize: 9, bold, color: bold ? C.navy : C.textDark });
+    sld.addText(r, { x: 5.12, y: 4.26 + i * 0.20, w: 4.52, h: 0.20, fontSize: 8.5, bold, color: bold ? C.navy : C.textDark });
   });
-  sld.addText('Fuel consumption: 4.663B gallons in 2025', { x: 5.12, y: 5.42, w: 4.52, h: 0.18, fontSize: 9, color: C.textLight, italic: true });
+  sld.addText('Fuel consumption: 4.663B gallons in 2025', { x: 5.12, y: 5.42, w: 4.52, h: 0.18, fontSize: 7.5, color: C.textLight, italic: true });
 }
 
 // ─── Save ────────────────────────────────────────────────────────────────────

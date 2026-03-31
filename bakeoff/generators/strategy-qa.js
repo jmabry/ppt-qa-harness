@@ -40,7 +40,7 @@ function kpiCard(slide, x, y, w, h, label, value, sub, valueColor, bgColor) {
   slide.addShape(pres.shapes.RECTANGLE, { x, y, w, h, fill: { color: bgColor }, line: { color: C.ltgray, width: 0.8 } });
   slide.addShape(pres.shapes.RECTANGLE, { x, y, w: 0.07, h, fill: { color: valueColor || C.accent }, line: { color: valueColor || C.accent } });
   slide.addText(value, { x: x + 0.14, y: y + 0.08, w: w - 0.18, h: h * 0.48, fontSize: 21, bold: true, color: valueColor || C.accent, valign: "middle", margin: 0 });
-  slide.addText(label, { x: x + 0.14, y: y + h * 0.52, w: w - 0.18, h: h * 0.26, fontSize: 9, bold: true, color: C.darkgray, margin: 0 });
+  slide.addText(label, { x: x + 0.14, y: y + h * 0.52, w: w - 0.18, h: h * 0.26, fontSize: 8.5, bold: true, color: C.darkgray, margin: 0 });
   if (sub) slide.addText(sub, { x: x + 0.14, y: y + h * 0.74, w: w - 0.18, h: h * 0.22, fontSize: 9, color: C.midgray, margin: 0 });
 }
 
@@ -101,54 +101,54 @@ function tbl(slide, rows, opts) {
     const sx = 0.35 + i * 1.3;
     slide.addShape(pres.shapes.RECTANGLE, { x: sx, y: 1.78, w: 1.25, h: 0.68, fill: { color: "0D1E3A" }, line: { color: C.accent, width: 0.5 } });
     slide.addText(item[1], { x: sx + 0.07, y: 1.82, w: 1.12, h: 0.3, fontSize: 13, bold: true, color: C.accent, margin: 0 });
-    slide.addText(item[0], { x: sx + 0.07, y: 2.1, w: 1.12, h: 0.3, fontSize: 11, color: C.midgray, margin: 0 });
+    slide.addText(item[0], { x: sx + 0.07, y: 2.1, w: 1.12, h: 0.3, fontSize: 8, color: C.midgray, margin: 0 });
   });
 
   // CEO / Board line
   slide.addText("CEO: Sarah Chen  ·  CFO: David Park  ·  CTO: Marcus Williams  ·  VP Sales: Rachel Torres", {
-    x: 0.35, y: 2.58, w: 5.2, h: 0.26, fontSize: 11, color: "5C7A9B", margin: 0
+    x: 0.35, y: 2.58, w: 5.2, h: 0.26, fontSize: 9, color: "5C7A9B", margin: 0
   });
   slide.addText("Board: Jeff Blackwell (Insight), Priya Sharma (Accel), Tom Nguyen (Independent)", {
-    x: 0.35, y: 2.84, w: 5.2, h: 0.26, fontSize: 11, color: "5C7A9B", margin: 0
+    x: 0.35, y: 2.84, w: 5.2, h: 0.26, fontSize: 9, color: "5C7A9B", margin: 0
   });
 
   // ── RIGHT PANEL ──
   // Wins
   slide.addShape(pres.shapes.RECTANGLE, { x: 5.95, y: 0.28, w: 3.8, h: 0.22, fill: { color: C.teal }, line: { color: C.teal } });
-  slide.addText("Q3 KEY WINS", { x: 6.05, y: 0.28, w: 3.6, h: 0.22, fontSize: 11, bold: true, color: C.white, valign: "middle", margin: 0 });
+  slide.addText("✓  Q3 KEY WINS", { x: 6.05, y: 0.28, w: 3.6, h: 0.22, fontSize: 8.5, bold: true, color: C.white, valign: "middle", margin: 0 });
   const wins = [
     "ARR +10.6% QoQ → $15.6M  (+4.2% vs plan)",
-    "Pipeline $8.6M — best quarter; win rate 28.4%",
+    "Pipeline $8.6M — best quarter ever; win rate 28.4%",
     "VP CS + Head of Partnerships + 2 ML PhDs hired",
   ];
   wins.forEach((w, i) => {
-    slide.addText("→  " + w, { x: 6.05, y: 0.54 + i * 0.32, w: 3.7, h: 0.29, fontSize: 11, color: C.white, margin: 0 });
+    slide.addText("→  " + w, { x: 6.05, y: 0.54 + i * 0.32, w: 3.7, h: 0.29, fontSize: 8.5, color: C.white, margin: 0 });
   });
 
   // Concerns
   slide.addShape(pres.shapes.RECTANGLE, { x: 5.95, y: 1.56, w: 3.8, h: 0.22, fill: { color: C.amber }, line: { color: C.amber } });
-  slide.addText("CONCERNS", { x: 6.05, y: 1.56, w: 3.6, h: 0.22, fontSize: 11, bold: true, color: C.white, valign: "middle", margin: 0 });
+  slide.addText("⚠  CONCERNS", { x: 6.05, y: 1.56, w: 3.6, h: 0.22, fontSize: 8.5, bold: true, color: C.white, valign: "middle", margin: 0 });
   const concerns = [
     "Churn spike: $500K in Q3 (+66% QoQ); 58% preventable",
-    "Competitive: DataForge SMB module; Zenith fundraise",
+    "Competitive: DataForge SMB module; Zenith fundraise + hiring",
   ];
   concerns.forEach((c, i) => {
-    slide.addText("→  " + c, { x: 6.05, y: 1.82 + i * 0.32, w: 3.7, h: 0.29, fontSize: 11, color: "FFD580", margin: 0 });
+    slide.addText("→  " + c, { x: 6.05, y: 1.82 + i * 0.32, w: 3.7, h: 0.29, fontSize: 8.5, color: "FFD580", margin: 0 });
   });
 
   // Board Decision
   slide.addShape(pres.shapes.RECTANGLE, { x: 5.95, y: 2.56, w: 3.8, h: 0.22, fill: { color: C.red }, line: { color: C.red } });
-  slide.addText("BOARD DECISION REQUIRED", { x: 6.05, y: 2.56, w: 3.6, h: 0.22, fontSize: 11, bold: true, color: C.white, valign: "middle", margin: 0 });
-  slide.addText("→  Approve $2.5M CS investment for churn\n→  Approve usage-based SMB pricing ($499/mo)\n→  Discuss Series C timing (Q2 2027 vs $30M ARR)", {
-    x: 6.05, y: 2.82, w: 3.7, h: 0.72, fontSize: 11, color: "FCA5A5", margin: 0
+  slide.addText("●  BOARD DECISION REQUIRED", { x: 6.05, y: 2.56, w: 3.6, h: 0.22, fontSize: 8.5, bold: true, color: C.white, valign: "middle", margin: 0 });
+  slide.addText("→  Approve $2.5M CS investment to address preventable churn\n→  Approve usage-based SMB pricing tier ($499/mo)\n→  Discuss Series C timing (Q2 2027 vs $30M ARR milestone)", {
+    x: 6.05, y: 2.82, w: 3.7, h: 0.72, fontSize: 8.5, color: "FCA5A5", margin: 0
   });
 
   // Agenda
   slide.addShape(pres.shapes.RECTANGLE, { x: 5.95, y: 3.7, w: 3.8, h: 0.22, fill: { color: "162A4A" }, line: { color: C.accent, width: 0.5 } });
-  slide.addText("AGENDA", { x: 6.05, y: 3.7, w: 3.6, h: 0.22, fontSize: 11, bold: true, color: C.accent, valign: "middle", margin: 0 });
-  const agenda = ["1  Revenue Dashboard", "2  GTM Performance", "3  Customer Health", "4  Product + Team", "5  Financial Outlook + Competitive", "6  Board Asks"];
+  slide.addText("AGENDA", { x: 6.05, y: 3.7, w: 3.6, h: 0.22, fontSize: 8, bold: true, color: C.accent, valign: "middle", margin: 0 });
+  const agenda = ["1  Revenue Dashboard", "2  GTM + Customer Health", "3  Product + Team", "4  Financial Outlook + Competitive", "5  Board Asks"];
   agenda.forEach((a, i) => {
-    slide.addText(a, { x: 6.05, y: 3.96 + i * 0.22, w: 3.7, h: 0.20, fontSize: 11, color: C.midgray, margin: 0 });
+    slide.addText(a, { x: 6.05, y: 3.96 + i * 0.26, w: 3.7, h: 0.24, fontSize: 8, color: C.midgray, margin: 0 });
   });
 
   // Footer
@@ -264,12 +264,12 @@ function tbl(slide, rows, opts) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SLIDE 3 — GTM PERFORMANCE
+// SLIDE 3 — GTM + CUSTOMER HEALTH
 // ═══════════════════════════════════════════════════════════════
 {
   const slide = pres.addSlide();
   slide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: C.offwhite }, line: { color: C.offwhite } });
-  hdr(slide, "SLIDE 3  ·  GTM Performance", "Q3 2026  ·  Sales KPIs, Channel Mix & CAC Trends");
+  hdr(slide, "SLIDE 3  ·  GTM Performance & Customer Health", "Q3 2026");
 
   const TOP = 0.65;
 
@@ -277,109 +277,53 @@ function tbl(slide, rows, opts) {
   const gtmCards = [
     { label: "Pipeline Generated", value: "$8.6M", sub: "+21.1% QoQ  ·  Best ever", vc: C.accent },
     { label: "Win Rate", value: "28.4%", sub: "+2.3pp QoQ  ·  Enterprise improving", vc: C.teal },
-    { label: "Avg Deal Size", value: "$42K ACV", sub: "+10.5%  ·  Moving upmarket", vc: C.teal },
+    { label: "Avg Deal Size", value: "$42K ACV", sub: "+10.5%  ·  Moving upmarket ✓", vc: C.teal },
     { label: "Quota Attainment", value: "112%", sub: "+18pp vs Q2  ·  Q2 was 94%", vc: C.teal },
     { label: "Sales Cycle", value: "68 days", sub: "-5.6% QoQ  ·  New demo flow", vc: C.teal },
   ];
   const cw = (W - 0.3) / gtmCards.length;
   gtmCards.forEach((c, i) => {
-    kpiCard(slide, 0.15 + i * cw, TOP, cw - 0.08, 0.82, c.label, c.value, c.sub, c.vc);
+    kpiCard(slide, 0.15 + i * cw, TOP, cw - 0.08, 0.78, c.label, c.value, c.sub, c.vc);
   });
 
   // ── Channel Performance ──
-  sectionLabel(slide, 0.15, TOP + 0.95, 4.7, "CHANNEL PERFORMANCE  —  Q3 2026");
+  sectionLabel(slide, 0.15, TOP + 0.88, 4.55, "CHANNEL PERFORMANCE  —  Q3 2026");
   const chanRows = [
     ["Channel", "Pipeline", "Deals Won", "Avg ACV", "CAC", "Notes"],
     ["Outbound SDR", "$3.8M", "18", "$52K", "$24.1K", "Scaled 4→6 SDRs in Q2"],
     ["Inbound Marketing", "$2.4M", "14", "$34K", "$12.8K", "Content + paid search"],
-    [{ text: "Partner / Referral", color: C.teal }, "$1.5M", "5", { text: "$68K", color: C.teal }, "$8.4K", { text: "SAP + Siemens ramping", color: C.teal }],
+    [{ text: "Partner / Referral", color: C.teal }, "$1.5M", "5", { text: "$68K", color: C.teal }, "$8.4K", { text: "SAP + Siemens ramping ↑", color: C.teal }],
     [{ text: "TOTAL", bold: true }, { text: "$8.6M", bold: true }, { text: "45", bold: true }, { text: "$42K", bold: true }, "$15.8K", ""],
   ];
   tbl(slide, chanRows, {
-    x: 0.15, y: TOP + 1.2, h: 0.32,
+    x: 0.15, y: TOP + 1.12, h: 0.28,
     colW: [1.2, 0.72, 0.72, 0.65, 0.65, 1.5],
     fontSize: 9,
     hdrFill: C.navy,
   });
 
   // ── CAC Trend chart ──
-  sectionLabel(slide, 0.15, TOP + 2.88, 4.7, "BLENDED CAC TREND  ($K)");
+  sectionLabel(slide, 4.82, TOP + 0.88, 5.03, "BLENDED CAC TREND  ($K)");
   const cacData = [
     { name: "Blended",     labels: ["Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26","Q3'26"], values: [22.4,20.1,19.8,18.2,17.6,16.4,15.8] },
     { name: "Enterprise",  labels: ["Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26","Q3'26"], values: [38.2,34.6,32.1,28.4,26.8,24.2,22.6] },
     { name: "Mid-Market",  labels: ["Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26","Q3'26"], values: [14.8,13.2,13.6,12.4,12.1,11.8,11.2] },
   ];
   slide.addChart(pres.charts.LINE, cacData, {
-    x: 0.15, y: TOP + 3.12, w: 4.7, h: 1.65,
+    x: 4.82, y: TOP + 1.12, w: 5.03, h: 1.82,
     chartColors: [C.accent, C.teal, C.amber],
     lineSize: 2,
     showValue: false,
     chartArea: { fill: { color: C.white }, border: { color: C.ltgray, width: 0.5 } },
     catAxisLabelColor: C.midgray, valAxisLabelColor: C.midgray,
-    catAxisLabelFontSize: 8, valAxisLabelFontSize: 8,
+    catAxisLabelFontSize: 7.5, valAxisLabelFontSize: 7.5,
     valGridLine: { color: C.ltgray, size: 0.5 }, catGridLine: { style: "none" },
-    showLegend: true, legendPos: "r", legendFontSize: 8,
-    valAxisTitle: true, valAxisTitleText: 'CAC ($K)', valAxisTitleFontSize: 8,
-  });
-
-  // ── Pipeline by Stage (right side) ──
-  sectionLabel(slide, 5.0, TOP + 0.95, 4.85, "PIPELINE BY STAGE  —  Q3 2026");
-  const pipeRows = [
-    ["Stage", "Deals", "Value", "Avg Days", "Conv Rate"],
-    ["Discovery", "28", "$2.4M", "—", "—"],
-    ["Evaluation", "18", "$2.8M", "22 days", "64%"],
-    ["Proposal", "12", "$2.1M", "18 days", "67%"],
-    ["Negotiation", "8", "$1.3M", "14 days", "75%"],
-    [{ text: "Closed Won", bold: true, color: C.teal }, { text: "45", bold: true }, { text: "$8.6M", bold: true, color: C.teal }, { text: "68 days", bold: true }, { text: "28.4%", bold: true, color: C.teal }],
-  ];
-  tbl(slide, pipeRows, {
-    x: 5.0, y: TOP + 1.2, h: 0.32,
-    colW: [0.95, 0.62, 0.82, 0.72, 0.72],
-    fontSize: 9,
-    hdrFill: C.navy,
-  });
-
-  // ── Win/Loss summary (right side bottom) ──
-  sectionLabel(slide, 5.0, TOP + 2.88, 4.85, "WIN / LOSS SUMMARY  —  Q3 2026");
-  const wlRows = [
-    ["Segment", "Deals Won", "Deals Lost", "Win Rate", "Top Loss Reason"],
-    ["Enterprise", "8", "14", { text: "36.4%", color: C.teal }, "Timeline / procurement delays"],
-    ["Mid-Market", "22", "31", { text: "41.5%", color: C.teal }, "Feature gaps (multi-tenant)"],
-    ["SMB", "15", "42", { text: "26.3%", color: C.amber }, "Price — DataForge undercutting"],
-    [{ text: "TOTAL", bold: true }, { text: "45", bold: true }, { text: "87", bold: true }, { text: "28.4%", bold: true }, ""],
-  ];
-  tbl(slide, wlRows, {
-    x: 5.0, y: TOP + 3.12, h: 0.32,
-    colW: [0.95, 0.78, 0.78, 0.72, 1.62],
-    fontSize: 9,
-    hdrFill: C.navy,
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SLIDE 4 — CUSTOMER HEALTH
-// ═══════════════════════════════════════════════════════════════
-{
-  const slide = pres.addSlide();
-  slide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: C.offwhite }, line: { color: C.offwhite } });
-  hdr(slide, "SLIDE 4  ·  Customer Health", "Q3 2026  ·  Churn Analysis & At-Risk Accounts");
-
-  const TOP = 0.65;
-
-  // ── Customer Health KPIs ──
-  const healthCards = [
-    { label: "Net Revenue Retention", value: "118%", sub: "Target 120%+  ·  Down from 121%", vc: C.amber },
-    { label: "Logo Retention", value: "92.4%", sub: "Target 95%+  ·  SMB dragging", vc: C.red },
-    { label: "Q3 Churn", value: "$500K", sub: "+66% QoQ  ·  58% preventable", vc: C.red },
-    { label: "At-Risk ARR (Q4)", value: "$340K", sub: "3 accounts on watch list", vc: C.amber },
-  ];
-  const chw = (W - 0.3) / healthCards.length;
-  healthCards.forEach((c, i) => {
-    kpiCard(slide, 0.15 + i * chw, TOP, chw - 0.08, 0.82, c.label, c.value, c.sub, c.vc);
+    showLegend: true, legendPos: "r", legendFontSize: 7.5,
+    valAxisTitle: true, valAxisTitleText: 'Churn ($K)', valAxisTitleFontSize: 8,
   });
 
   // ── Churn Deep Dive ──
-  sectionLabel(slide, 0.15, TOP + 0.95, 9.7, "CHURN DEEP DIVE  —  $500K IN Q3  (+66% QoQ)  ·  58% PREVENTABLE", C.red);
+  sectionLabel(slide, 0.15, TOP + 2.57, 5.8, "CHURN DEEP DIVE  —  $500K IN Q3  (+66% QoQ)  ·  58% PREVENTABLE", C.red);
   const churnRows = [
     ["Account", "Segment", "ARR Lost", "Reason", { text: "Preventable?", align: "center" }],
     ["Apex Manufacturing", "Enterprise", "$145K", "Acquired — contract not renewed post-M&A", { text: "No", color: C.midgray }],
@@ -389,50 +333,35 @@ function tbl(slide, rows, opts) {
     [{ text: "TOTAL / PREVENTABLE", bold: true }, "", { text: "$500K", bold: true, color: C.red }, { text: "$290K of $500K (58%) preventable", bold: true }, { text: "$290K recoverable", bold: true, color: C.red }],
   ];
   tbl(slide, churnRows, {
-    x: 0.15, y: TOP + 1.2, h: 0.32,
-    colW: [1.5, 0.88, 0.72, 3.2, 1.5],
+    x: 0.15, y: TOP + 2.81, h: 0.31,
+    colW: [1.38, 0.82, 0.65, 2.42, 1.2],
     fontSize: 9,
     hdrFill: "7F1D1D",
   });
 
   // ── At-Risk Accounts ──
-  sectionLabel(slide, 0.15, TOP + 2.88, 9.7, "AT-RISK ACCOUNTS  —  Q4 WATCH LIST  ·  $340K TOTAL AT-RISK ARR", C.amber);
+  sectionLabel(slide, 6.1, TOP + 2.57, 3.75, "AT-RISK ACCOUNTS  —  Q4 WATCH LIST", C.amber);
   const riskRows = [
-    ["Account", "ARR", "Risk Signal", "Mitigation Plan", "Owner"],
-    [{ text: "Sterling Industries", color: C.red }, { text: "$210K", color: C.red }, "Champion left; new VP evaluating alternatives", "EBR scheduled 10/15; CEO-level outreach", "R. Torres"],
-    ["ClearPath Systems", "$72K", "Renewal in 60 days; competitor POC underway", "Custom ROI analysis; extended pilot offer", "D. Park"],
-    ["Midwest Components", "$58K", "Usage -40% Aug; tickets 3x — CS engaged", "Dedicated CSM assigned; weekly check-ins", "J. Lin"],
+    ["Account", "ARR", "Risk Signal", "Owner"],
+    [{ text: "Sterling Industries", color: C.red }, { text: "$210K", color: C.red }, "Champion left; new VP evaluating alternatives", "R. Torres"],
+    ["ClearPath Systems", "$72K", "Renewal in 60 days; competitor POC underway", "D. Park"],
+    ["Midwest Components", "$58K", "Usage -40% Aug; tickets 3x — CS engaged", "J. Lin"],
   ];
   tbl(slide, riskRows, {
-    x: 0.15, y: TOP + 3.12, h: 0.36,
-    colW: [1.3, 0.65, 2.2, 2.2, 0.8],
+    x: 6.1, y: TOP + 2.81, h: 0.40,
+    colW: [0.95, 0.55, 1.70, 0.55],
     fontSize: 9,
     hdrFill: C.amber,
-  });
-
-  // ── Churn Prevention Actions ──
-  sectionLabel(slide, 0.15, TOP + 4.28, 9.7, "CHURN PREVENTION ACTIONS  —  Q4 INITIATIVES");
-  const actionRows = [
-    ["Initiative", "Timeline", "Expected Impact", "Status"],
-    ["VP CS onboarding overhaul — 90-day guided program for all new accounts", "Oct–Dec", { text: "Reduce onboarding churn 50%", color: C.teal }, "Starting Oct 1"],
-    ["Usage-based SMB tier ($499/mo) — reduce price-driven churn", "Q1 2027", { text: "Retain 60+ SMB prospects/quarter", color: C.teal }, "Spec complete"],
-    ["Proactive health scoring — flag at-risk accounts before renewal window", "Nov", { text: "30-day earlier intervention", color: C.teal }, "Prototype built"],
-  ];
-  tbl(slide, actionRows, {
-    x: 0.15, y: TOP + 4.52, h: 0.28,
-    colW: [4.2, 0.8, 2.4, 1.2],
-    fontSize: 9,
-    hdrFill: C.navy,
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SLIDE 5 — PRODUCT + TEAM
+// SLIDE 4 — PRODUCT + TEAM
 // ═══════════════════════════════════════════════════════════════
 {
   const slide = pres.addSlide();
   slide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: C.offwhite }, line: { color: C.offwhite } });
-  hdr(slide, "SLIDE 5  ·  Product & Engineering / Team", "Q3 2026 Shipped · Q4 Roadmap · Headcount");
+  hdr(slide, "SLIDE 4  ·  Product & Engineering / Team", "Q3 2026 Shipped · Q4 Roadmap · Headcount");
 
   const TOP = 0.65;
 
@@ -493,46 +422,46 @@ function tbl(slide, rows, opts) {
     { name: "Q3 2026", labels: ["Eng","Prod","Sales","CS","Mktg","G&A"], values: [46,9,22,14,9,12] },
     { name: "Q4 Target", labels: ["Eng","Prod","Sales","CS","Mktg","G&A"], values: [50,10,25,16,10,13] },
   ], {
-    x: 5.8, y: TOP + 2.61, w: 4.05, h: 1.84,
+    x: 5.8, y: TOP + 2.61, w: 4.05, h: 1.70,
     barDir: "col",
     barGrouping: "clustered",
     chartColors: [C.accent, "93C5FD"],
     chartArea: { fill: { color: C.white }, border: { color: C.ltgray, width: 0.5 } },
     catAxisLabelColor: C.midgray, valAxisLabelColor: C.midgray,
-    catAxisLabelFontSize: 7.5, valAxisLabelFontSize: 7.5,
+    catAxisLabelFontSize: 9, valAxisLabelFontSize: 9,
     valGridLine: { color: C.ltgray, size: 0.5 }, catGridLine: { style: "none" },
-    showLegend: true, legendPos: "b", legendFontSize: 7.5,
-    showValue: true, dataLabelFontSize: 7,
+    showLegend: true, legendPos: "b", legendFontSize: 9,
+    showValue: true, dataLabelFontSize: 9,
   });
 
   // Key hires
-  sectionLabel(slide, 0.15, TOP + 3.28, 5.5, "KEY HIRES — Q3 2026");
+  sectionLabel(slide, 0.15, TOP + 3.42, 5.5, "KEY HIRES — Q3 2026");
   const hireRows = [
     ["Role", "Background", "Focus"],
-    [{ text: "VP Customer Success (9/1)", bold: true }, "Previously at Datadog — built CS org 20→80", { text: "Own churn reduction; build SMB onboarding", color: C.teal }],
-    [{ text: "Head of Partnerships (8/15)", bold: true }, "Previously at Siemens — SAP + Siemens channel", { text: "Accelerate partner pipeline to $5M", color: C.accent }],
-    ["2 Senior ML Engineers", "PhD hires from Georgia Tech", "Predictive Maintenance v3; model accuracy"],
+    [{ text: "VP Customer Success (9/1)", bold: true }, "Previously at Datadog — built CS org from 20→80", { text: "Own churn reduction; build SMB onboarding motion", color: C.teal }],
+    [{ text: "Head of Partnerships (8/15)", bold: true }, "Previously at Siemens — owns SAP + Siemens channel", { text: "Accelerate partner pipeline ($1.5M → $5M target)", color: C.accent }],
+    ["2 Senior ML Engineers", "PhD hires from Georgia Tech", "Predictive Maintenance v3; model accuracy roadmap"],
   ];
   tbl(slide, hireRows, {
-    x: 0.15, y: TOP + 3.52, h: 0.27,
-    colW: [1.7, 2.22, 1.63],
+    x: 0.15, y: TOP + 3.44, h: 0.32,
+    colW: [1.47, 2.30, 1.73],
     fontSize: 9,
     hdrFill: C.navy,
   });
 
   // Attrition note
-  slide.addText("Q3 Attrition: 6 departures (5.4%) — 3 engineering to FAANG. Comp bands adjusted +12% for senior engineers.", {
-    x: 0.15, y: TOP + 4.52, w: 5.5, h: 0.22, fontSize: 9, color: C.amber, margin: 0
+  slide.addText("⚠  Q3 Attrition: 6 departures (5.4% quarterly) — 3 engineering to FAANG. Comp bands adjusted +12% for senior engineers.", {
+    x: 0.15, y: H - 0.28, w: 5.5, h: 0.28, fontSize: 9, color: C.amber, margin: 0
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SLIDE 6 — FINANCIAL OUTLOOK + COMPETITIVE
+// SLIDE 5 — FINANCIAL OUTLOOK + COMPETITIVE
 // ═══════════════════════════════════════════════════════════════
 {
   const slide = pres.addSlide();
   slide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: C.offwhite }, line: { color: C.offwhite } });
-  hdr(slide, "SLIDE 6  ·  Financial Outlook & Competitive Landscape", "FY2026E / Cash Position / Market Dynamics");
+  hdr(slide, "SLIDE 5  ·  Financial Outlook & Competitive Landscape", "FY2026E / Cash Position / Market Dynamics");
 
   const TOP = 0.65;
 
@@ -597,19 +526,19 @@ function tbl(slide, rows, opts) {
     ["ARR (est)", "$15.6M", "~$45M", "~$180M", "~$4M"],
     ["Target Mkt", "Mid-mkt mfg", "SMB-Mid horiz.", "Enterprise all", "Mid-mkt mfg"],
     ["Avg ACV", "$30-250K", "$2.4-48K", "$100K-500K+", "$20-80K"],
-    ["Win Rate vs Us", "—", { text: "62%", color: C.teal }, { text: "34%", color: C.red }, { text: "55%", color: C.teal }],
-    ["Key Threat", "—", { text: "SMB module", color: C.amber }, { text: "Lite Q1'27", color: C.amber }, { text: "Hiring blitz", color: C.red }],
+    ["Win Rate", "—", { text: "62% ✓", color: C.teal }, { text: "34% ✗", color: C.red }, { text: "55% ✓", color: C.teal }],
+    ["Key Threat", "—", { text: "$199/mo SMB module", color: C.amber }, { text: "Acme Lite Q1'27", color: C.amber }, { text: "VC hiring blitz", color: C.red }],
   ];
   tbl(slide, compRows, {
     x: 6.1, y: TOP + 2.2, h: 0.27,
-    colW: [0.82, 0.82, 0.78, 0.68, 0.65],
+    colW: [0.76, 0.82, 0.78, 0.70, 0.69],
     fontSize: 9,
     hdrFill: C.navy,
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SLIDE 7 — BOARD ASKS
+// SLIDE 6 — BOARD ASKS
 // ═══════════════════════════════════════════════════════════════
 {
   const slide = pres.addSlide();
@@ -691,33 +620,33 @@ function tbl(slide, rows, opts) {
     // Number + label
     slide.addText(ask.num, { x: ask.x + 0.12, y: ask.y + 0.1, w: 0.55, h: 0.42, fontSize: 26, bold: true, color: ask.color, margin: 0 });
     slide.addShape(pres.shapes.RECTANGLE, { x: ask.x + 0.65, y: ask.y + 0.18, w: 0.72, h: 0.22, fill: { color: ask.color }, line: { color: ask.color } });
-    slide.addText(ask.label, { x: ask.x + 0.66, y: ask.y + 0.18, w: 0.7, h: 0.22, fontSize: 9, bold: true, color: C.white, valign: "middle", align: "center", margin: 0 });
+    slide.addText(ask.label, { x: ask.x + 0.66, y: ask.y + 0.18, w: 0.7, h: 0.22, fontSize: 7.5, bold: true, color: C.white, valign: "middle", align: "center", margin: 0 });
 
     // Title
     slide.addText(ask.title, { x: ask.x + 0.12, y: ask.y + 0.52, w: ask.w - 0.22, h: 0.5, fontSize: 10, bold: true, color: C.white, margin: 0 });
 
     // Rationale
     slide.addShape(pres.shapes.RECTANGLE, { x: ask.x + 0.12, y: ask.y + 1.06, w: ask.w - 0.22, h: 0.18, fill: { color: "141F35" }, line: { color: "141F35" } });
-    slide.addText("RATIONALE", { x: ask.x + 0.14, y: ask.y + 1.06, w: ask.w - 0.24, h: 0.18, fontSize: 9, bold: true, color: ask.color, valign: "middle", margin: 0 });
+    slide.addText("RATIONALE", { x: ask.x + 0.14, y: ask.y + 1.06, w: ask.w - 0.24, h: 0.18, fontSize: 7, bold: true, color: ask.color, valign: "middle", margin: 0 });
     ask.bullets.forEach((b, bi) => {
-      slide.addText("·  " + b, { x: ask.x + 0.14, y: ask.y + 1.27 + bi * 0.35, w: ask.w - 0.24, h: 0.32, fontSize: 9, color: "B0C4DE", margin: 0 });
+      slide.addText("·  " + b, { x: ask.x + 0.14, y: ask.y + 1.27 + bi * 0.35, w: ask.w - 0.24, h: 0.32, fontSize: 7.8, color: "B0C4DE", margin: 0 });
     });
 
     // Metrics
     slide.addShape(pres.shapes.RECTANGLE, { x: ask.x + 0.12, y: ask.y + 2.37, w: ask.w - 0.22, h: 0.18, fill: { color: "141F35" }, line: { color: "141F35" } });
-    slide.addText("KEY METRICS", { x: ask.x + 0.14, y: ask.y + 2.37, w: ask.w - 0.24, h: 0.18, fontSize: 9, bold: true, color: ask.color, valign: "middle", margin: 0 });
+    slide.addText("KEY METRICS", { x: ask.x + 0.14, y: ask.y + 2.37, w: ask.w - 0.24, h: 0.18, fontSize: 7, bold: true, color: ask.color, valign: "middle", margin: 0 });
     ask.metrics.forEach((m, mi) => {
       const mx = ask.x + 0.12 + (mi % 2) * ((ask.w - 0.22) / 2);
       const my = ask.y + 2.58 + Math.floor(mi / 2) * 0.52;
       const mw = (ask.w - 0.26) / 2;
       slide.addShape(pres.shapes.RECTANGLE, { x: mx, y: my, w: mw - 0.04, h: 0.48, fill: { color: "0F1E36" }, line: { color: "1E3A5F", width: 0.5 } });
       slide.addText(m[1], { x: mx + 0.06, y: my + 0.04, w: mw - 0.14, h: 0.24, fontSize: 11, bold: true, color: ask.color, margin: 0 });
-      slide.addText(m[0], { x: mx + 0.06, y: my + 0.27, w: mw - 0.14, h: 0.18, fontSize: 9, color: C.midgray, margin: 0 });
+      slide.addText(m[0], { x: mx + 0.06, y: my + 0.27, w: mw - 0.14, h: 0.18, fontSize: 7, color: C.midgray, margin: 0 });
     });
 
     // Urgency
     slide.addShape(pres.shapes.RECTANGLE, { x: ask.x + 0.12, y: ask.y + 3.66, w: ask.w - 0.22, h: 0.52, fill: { color: "0F1E36" }, line: { color: ask.color, width: 0.5 } });
-    slide.addText(ask.urgency, { x: ask.x + 0.17, y: ask.y + 3.7, w: ask.w - 0.3, h: 0.44, fontSize: 9, color: ask.color, margin: 0 });
+    slide.addText(ask.urgency, { x: ask.x + 0.17, y: ask.y + 3.7, w: ask.w - 0.3, h: 0.44, fontSize: 7.8, color: ask.color, margin: 0 });
   });
 
   // Footer

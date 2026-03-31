@@ -4,30 +4,41 @@ A QA prompt for PPTX generation with Claude Code — shared as an example of lea
 
 Claude can generate presentations using [Anthropic's pptx skill](https://github.com/anthropics/skills) and `pptxgenjs`. But `pptxgenjs` doesn't clip overflow — text silently renders past bounding boxes, table columns collapse, and layout bugs are invisible until you render the file.
 
-This repo provides a `CLAUDE.md` that tells Claude to render every slide, read the images, check them against a checklist, and fix what's broken — in a loop, until clean.
+This repo provides a `CLAUDE.md` that defines the QA loop (render → inspect → fix → re-run), caps passes at three, and describes an optional **parallel fix workflow** for multi-slide decks: one agent per slide (or small group), single-slide patches, then a **sequential merge** back into the generator or master XML. Full detail lives in `CLAUDE.md`.
 
 ## Results
 
-| Deck | Before QA | After QA | Delta | Issues Fixed |
-|------|-----------|----------|-------|-------------|
-| **Corporate** (18 slides) | 17/25 | 21/25 | +4 | 16 font/layout issues |
-| **Software** (6 slides) | 21/25 | 21/25 | +0 | 0 (clean baseline) |
-| **Strategy** (6→7 slides) | 17/25 | 21/25 | +4 | 7 issues, slide split |
-| **Total** | **55/75** | **63/75** | **+8** | 23 |
+Scores are 1–5 on five dimensions (max 25 per deck). **Delta** is rubric points gained after QA — not the same thing as how many rendering bugs we logged.
 
-The biggest wins are on **readability** and **layout correctness** — the dimensions where "looks fine in code" diverges most from "looks fine rendered." Decks with more data density (tables, callout boxes, annotations) accumulate more rendering bugs. Full breakdown: [`bakeoff/SCORECARD.md`](bakeoff/SCORECARD.md)
+| Deck | Before QA | After QA | Delta |
+|------|-----------|----------|-------|
+| **Corporate** (18 slides) | 19/25 | 21/25 | +2 |
+| **Software** (6 slides) | 19/25 | 21/25 | +2 |
+| **Strategy** (6→7 slides) | 18/25 | 20/25 | +2 |
+| **Total** | **56/75** | **62/75** | **+6** |
 
-## The cost of iterative QA
+Separately, the QA pass found and fixed **11** concrete baseline issues in the three decks (4 + 2 + 5); strategy also split one overloaded slide so the deck grew by one slide. Itemized list: [`bakeoff/outputs/RESULTS.md`](bakeoff/outputs/RESULTS.md).
 
-The QA loop works, but it burns wall-clock time. Our bakeoff took ~20 minutes across 4 decks — most of it in the fix-render-inspect cycle, not initial generation.
+The biggest wins are on **readability** and **layout correctness** — the dimensions where "looks fine in code" diverges most from "looks fine rendered." Decks with more data density (tables, callout boxes, annotations) accumulate more rendering bugs. Dimension-by-dimension notes: [`bakeoff/SCORECARD.md`](bakeoff/SCORECARD.md).
 
-- **Rendering is serial.** LibreOffice runs single-instance; each conversion takes ~30s. No way to parallelize.
-- **Each fix requires a full re-render.** Change one font size on slide 11, re-render all 18 slides.
-- **Inspection is fast, fixing is slow.** Spotting issues takes seconds. Tracing font sizes through generator helpers and recalculating layout takes minutes.
+## What the workflow costs (and where it helps)
 
-Parallel subagents and targeted re-inspection (only re-reading affected slides on pass 2) helped. Two passes was enough — we never needed pass 3.
+The loop works, but wall-clock adds up. Our bakeoff landed around **~30 minutes** for four decks — mostly render, inspect, and implement fixes, not first-draft generation.
 
-**The meta-lesson:** the best use of the QA loop is to learn what rules to add to the *generation* step so the loop has less work to do next time. Most of our 23 issues were the same bug (font too small) repeated across slides — a single generation rule ("never use fontSize below 9") would have prevented them. For creative tasks where output is visual but authoring is code, the agent needs a feedback loop that includes looking at the result. But front-loading constraints beats retrofitting fixes.
+**Bottlenecks that stay serial**
+
+- **Full-deck conversion** — One LibreOffice headless run per full PPTX→PDF pass (~tens of seconds per deck). After you merge parallel fixes, you still owe **one** full re-render of the whole deck for a confidence pass.
+- **Merge** — After parallel patch agents finish, changes go into the canonical generator (Path A) or the unpacked master deck (Path B) in a **single merge pass** — no concurrent edits to the source of truth.
+
+**Where parallelism pays off**
+
+- **Inspection** — Chunk large decks (~5 slides per chunk) or split reads across subagents so you are not staring at 18 slides in one context window.
+- **Fixes** — **Path A** (you have a pptxgenjs generator): one agent per slide (or 2–3 slides), each with a standalone `*-qa/patches/gen-slide-*.js` that emits a **single-slide** PPTX, a quick render to verify, then a JSON report. **Path B** (no generator, edit XML): same isolation pattern on single-slide extracts — verify on a small render, merge XML into the unpacked master afterward. Parallel agents are not fighting over the same file until merge.
+- **Re-inspection on later passes** — After the first pass, only re-read slides that failed (plus neighbors for context), per `CLAUDE.md`.
+
+**Guardrails** — Outer loop: max **3** QA iterations. Per-slide agents: max **2** fix attempts before filing partial/failed. Our bakeoff needed **one** full QA pass per deck; we never used pass 2.
+
+**Meta-lesson** — The best ROI is still **front-loading rules into generation** (minimum font sizes, no shrink-to-fit, split tables/slides instead). Most of the **11** logged baseline issues were the same small-font class of bug repeated across slides. The QA loop proves what to codify; constraints in the generator beat chasing EMU after render.
 
 ## Setup
 

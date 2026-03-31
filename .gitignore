@@ -11,11 +11,11 @@ package.json
 !bakeoff/outputs/*-baseline.pptx
 !bakeoff/outputs/*-qa.pptx
 
-# Bakeoff intermediates (pass files, renders, logs, results)
+# Bakeoff intermediates (pass files, renders, parallel QA working dirs)
 bakeoff/outputs/*-pass*.pptx
 bakeoff/outputs/*-slides/
+bakeoff/outputs/*-qa/
 bakeoff/outputs/*.err
-bakeoff/outputs/RESULTS.md
 
 # Bakeoff vendored skill repos (cloned during setup)
 bakeoff/.vendor/
