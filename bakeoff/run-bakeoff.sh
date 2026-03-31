@@ -1,28 +1,57 @@
 #!/bin/bash
 set -euo pipefail
 
-# Bakeoff: Compare deck-builder vs MiniMax vs Anthropic pptx skills
+# Bakeoff: Compare harness-guided vs unguided pptx generation
 #
-# Generates PPTX decks from identical prompts using 3 different Claude Code
-# skills, then renders outputs to images for side-by-side comparison.
+# Runs the same Anthropic pptx skill on identical prompts under two conditions:
+#   "generate" — skill docs only, Claude decides whether to QA its own output
+#   "harness"  — skill docs + CLAUDE.md, which mandates a pptx-qa agent
+#                loop until the output passes visual inspection
 #
-# Directory structure:
-#   prompts/        — one .md file per deck topic (corporate, software, strategy)
-#   generators/     — gen scripts named {prompt}-{skill}.js
-#   outputs/        — PPTX + rendered images named {prompt}-{skill}.*
+# The only variable is the harness instruction. Same model, same tools, same
+# prompts. This isolates the effect of structured QA on output quality.
 #
 # Prerequisites:
-#   - claude CLI (Claude Code 2.x+)
-#   - npm (for pptxgenjs install)
-#   - soffice (LibreOffice) + pdftoppm (Poppler) for rendering
-#   - git (for cloning skill repos)
+#   claude (Claude Code CLI)    jq            node / npm
+#   soffice (LibreOffice)       pdftoppm      git
+#   Run `./run-bakeoff.sh setup` to verify deps and fetch skill docs.
 #
-# Usage:
-#   ./run-bakeoff.sh setup          # clone skills, install deps
-#   ./run-bakeoff.sh generate [N]   # generate decks (optionally filter by prompt name)
-#   ./run-bakeoff.sh render         # convert all PPTX to slide images
-#   ./run-bakeoff.sh summary        # print comparison summary
-#   ./run-bakeoff.sh clean          # remove generated outputs (keep prompts)
+# Directory layout:
+#   prompts/                 One .md file per deck topic
+#   generators/              Generated Node.js scripts ({topic}-{tag}.js)
+#   outputs/                 PPTX, PDF, slide JPEGs, and logs
+#   bakeoff.config.json      Shared defaults (committed)
+#   bakeoff.config.local.json  Personal overrides (gitignored)
+#
+# Config (bakeoff.config.json):
+#   prompts          Array of prompt names matching files in prompts/
+#   max_budget_usd   Max spend per Claude invocation (default: 10)
+#   model            Model override, or null for default
+#   parallel         true to run prompts concurrently, false for sequential
+#   claude_args.{generate,harness}:
+#     allowed_tools    Space-separated tool names passed to --allowedTools
+#     permission_mode  Permission mode (null = default, "bypassPermissions" etc.)
+#
+# To override config locally without affecting the repo, create
+# bakeoff.config.local.json — it deep-merges over the base config.
+# Example (skip permission prompts for your own runs):
+#   { "claude_args": { "generate": { "permission_mode": "bypassPermissions" },
+#                      "harness":  { "permission_mode": "bypassPermissions" } } }
+#
+# Commands:
+#   ./run-bakeoff.sh                    # default: runs "all"
+#   ./run-bakeoff.sh all [filter]       # setup + generate + harness + render + summary
+#   ./run-bakeoff.sh setup              # clone skill, install deps, smoke-test claude
+#   ./run-bakeoff.sh generate [filter]  # generate decks without harness
+#   ./run-bakeoff.sh harness  [filter]  # generate decks with harness (QA loop)
+#   ./run-bakeoff.sh render             # convert PPTX → PDF → slide JPEGs
+#   ./run-bakeoff.sh summary            # print side-by-side comparison table
+#   ./run-bakeoff.sh clean              # remove outputs + generators (keeps prompts)
+#
+# The optional [filter] is a substring match on prompt names, e.g.:
+#   ./run-bakeoff.sh generate corporate   # only run the corporate prompt
+#
+# Scoring: after both runs complete, fill in SCORECARD.md with visual ratings.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -30,43 +59,69 @@ PROMPTS_DIR="$SCRIPT_DIR/prompts"
 GENERATORS_DIR="$SCRIPT_DIR/generators"
 OUTPUTS_DIR="$SCRIPT_DIR/outputs"
 VENDOR_DIR="$SCRIPT_DIR/.vendor"
-
-# Skill sources — cloned into .vendor/ during setup
-DECKBUILDER_SKILL="$REPO_ROOT"
-MINIMAX_SKILL="$VENDOR_DIR/minimax-skills/skills/pptx-generator"
+CLAUDE_DIR="$REPO_ROOT/.claude"
 ANTHROPIC_SKILL="$VENDOR_DIR/anthropic-skills/skills/pptx"
 
-SKILLS=(deck-builder minimax anthropic)
-PROMPTS=(corporate software strategy)
-MAX_BUDGET="${BAKEOFF_MAX_BUDGET:-5}"  # USD per invocation
+CONFIG="$SCRIPT_DIR/bakeoff.config.json"
+LOCAL_CONFIG="$SCRIPT_DIR/bakeoff.config.local.json"
 
-# ---- Helpers ----
+# ---- Config (jq merges base + local overrides) ----
+
+cfg() {
+  local key="$1"
+  if [ -f "$LOCAL_CONFIG" ]; then
+    jq -rs ".[0] * .[1] | $key // empty" "$CONFIG" "$LOCAL_CONFIG"
+  else
+    jq -r "$key // empty" "$CONFIG"
+  fi
+}
+
+cfg_array() {
+  local key="$1"
+  if [ -f "$LOCAL_CONFIG" ]; then
+    jq -rs ".[0] * .[1] | $key // [] | .[]" "$CONFIG" "$LOCAL_CONFIG"
+  else
+    jq -r "$key // [] | .[]" "$CONFIG"
+  fi
+}
+
+# ---- Load config ----
+
+PROMPTS=()
+while IFS= read -r line; do PROMPTS+=("$line"); done < <(cfg_array '.prompts')
+MAX_BUDGET="$(cfg '.max_budget_usd')"
+PARALLEL="$(cfg '.parallel')"
+MODEL="$(cfg '.model')"
+CLAUDE_CMD="$(cfg '.claude_command')"
+CLAUDE_CMD="${CLAUDE_CMD:-claude}"  # default to 'claude' if not set
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
 
-load_skill_docs() {
-  local skill="$1"
-  case "$skill" in
-    deck-builder)
-      cat "$DECKBUILDER_SKILL/skill/SKILL.md" \
-          "$DECKBUILDER_SKILL/skill/architecture.md" \
-          "$DECKBUILDER_SKILL/skill/pptxgenjs.md"
-      ;;
-    minimax)
-      if [ ! -f "$MINIMAX_SKILL/SKILL.md" ]; then
-        echo "ERROR: MiniMax skill not found — run '$0 setup' first" >&2
-        return 1
-      fi
-      cat "$MINIMAX_SKILL/SKILL.md" "$MINIMAX_SKILL"/references/*.md
-      ;;
-    anthropic)
-      if [ ! -f "$ANTHROPIC_SKILL/SKILL.md" ]; then
-        echo "ERROR: Anthropic skill not found — run '$0 setup' first" >&2
-        return 1
-      fi
-      cat "$ANTHROPIC_SKILL/SKILL.md" "$ANTHROPIC_SKILL/pptxgenjs.md"
-      ;;
-  esac
+load_anthropic_docs() {
+  if [ ! -f "$ANTHROPIC_SKILL/SKILL.md" ]; then
+    echo "ERROR: Anthropic skill not found — run '$0 setup' first" >&2; return 1
+  fi
+  cat "$ANTHROPIC_SKILL/SKILL.md" "$ANTHROPIC_SKILL/pptxgenjs.md"
+}
+
+# Build the claude CLI invocation array for a given mode
+build_claude_args() {
+  local mode="$1"  # "generate" or "harness"
+  local args=(--print)
+
+  local allowed_tools
+  allowed_tools="$(cfg ".claude_args.${mode}.allowed_tools")"
+  [ -n "$allowed_tools" ] && args+=(--allowedTools "$allowed_tools")
+
+  local permission_mode
+  permission_mode="$(cfg ".claude_args.${mode}.permission_mode")"
+  [ -n "$permission_mode" ] && args+=(--permission-mode "$permission_mode")
+
+  [ -n "$MAX_BUDGET" ] && args+=(--max-budget-usd "$MAX_BUDGET")
+  [ -n "$MODEL" ]      && args+=(--model "$MODEL")
+
+  # Return via global — bash can't return arrays
+  CLAUDE_ARGS=("${args[@]}")
 }
 
 # ---- Commands ----
@@ -75,150 +130,155 @@ cmd_setup() {
   log "Setting up bakeoff environment..."
   mkdir -p "$VENDOR_DIR" "$GENERATORS_DIR" "$OUTPUTS_DIR"
 
-  # Clone MiniMax skill (MIT)
-  if [ ! -d "$VENDOR_DIR/minimax-skills" ]; then
-    log "Cloning MiniMax skills from GitHub (MIT licensed)..."
-    git clone --depth 1 https://github.com/MiniMax-AI/skills.git "$VENDOR_DIR/minimax-skills"
-  else
-    log "MiniMax skills already cloned — pulling latest..."
-    git -C "$VENDOR_DIR/minimax-skills" pull --ff-only 2>/dev/null || true
+  # Check dependencies
+  local missing=()
+  command -v jq       >/dev/null || missing+=(jq)
+  command -v claude   >/dev/null || missing+=(claude)
+  command -v npm      >/dev/null || missing+=(npm)
+  command -v node     >/dev/null || missing+=(node)
+  command -v soffice  >/dev/null || missing+=(soffice)
+  command -v pdftoppm >/dev/null || missing+=(pdftoppm)
+  command -v git      >/dev/null || missing+=(git)
+  if [ "${#missing[@]}" -gt 0 ]; then
+    log "ERROR: Missing dependencies: ${missing[*]}"
+    log "  brew install ${missing[*]}"
+    exit 1
   fi
+  log "OK: all dependencies found"
 
-  # Clone Anthropic skill (proprietary — source-available for reference)
   if [ ! -d "$VENDOR_DIR/anthropic-skills" ]; then
-    log "Cloning Anthropic skills from GitHub (proprietary — for comparison only)..."
+    log "Cloning Anthropic skills from GitHub..."
     git clone --depth 1 https://github.com/anthropics/skills.git "$VENDOR_DIR/anthropic-skills"
   else
     log "Anthropic skills already cloned — pulling latest..."
     git -C "$VENDOR_DIR/anthropic-skills" pull --ff-only 2>/dev/null || true
   fi
 
-  # Verify skills exist
-  for skill in deck-builder minimax anthropic; do
-    if load_skill_docs "$skill" > /dev/null 2>&1; then
-      log "OK: $skill skill found"
-    else
-      log "WARNING: $skill skill not found"
-    fi
-  done
+  if load_anthropic_docs > /dev/null 2>&1; then
+    log "OK: anthropic skill found"
+  else
+    log "WARNING: anthropic skill not found"
+  fi
 
-  # Install pptxgenjs at bakeoff root (shared by all generators)
   if [ ! -d "$SCRIPT_DIR/node_modules/pptxgenjs" ]; then
     log "Installing pptxgenjs..."
-    npm install --prefix "$SCRIPT_DIR" pptxgenjs 2>/dev/null
+    npm install --prefix "$SCRIPT_DIR" pptxgenjs 2>/dev/null || {
+      log "WARNING: npm install failed — check permissions or run manually"
+    }
   fi
 
   log "Setup complete."
 }
 
 run_one() {
-  local skill="$1"
-  local prompt_name="$2"
-  local gen_file="$GENERATORS_DIR/${prompt_name}-${skill}.js"
-  local output_file="$OUTPUTS_DIR/${prompt_name}-${skill}.pptx"
-  local log_file="$OUTPUTS_DIR/${prompt_name}-${skill}.log"
+  local mode="$1" prompt_name="$2"
+  local tag="$( [ "$mode" = "harness" ] && echo "harness" || echo "anthropic" )"
+  local output_file="$OUTPUTS_DIR/${prompt_name}-${tag}.pptx"
+  local log_file="$OUTPUTS_DIR/${prompt_name}-${tag}.log"
   local prompt_file="$PROMPTS_DIR/${prompt_name}.md"
 
   if [ ! -f "$prompt_file" ]; then
-    log "ERROR: Prompt file not found: $prompt_file"
-    return 1
+    log "ERROR: Prompt file not found: $prompt_file"; return 1
   fi
+  local gen_file="$GENERATORS_DIR/${prompt_name}-${tag}.js"
 
-  # Skip if PPTX already exists
   if [ -f "$output_file" ]; then
-    log "SKIP $prompt_name-$skill — PPTX already exists (use 'clean' to reset)"
-    return 0
+    log "SKIP ${prompt_name}-${tag} — PPTX exists (use 'clean' to reset)"; return 0
   fi
 
-  local skill_docs
-  skill_docs=$(load_skill_docs "$skill") || return 1
+  # Clean slate — remove stale generator so Claude builds fresh
+  rm -f "$gen_file"
 
-  local prompt_text
+  local skill_docs prompt_text system_prompt
+  skill_docs=$(load_anthropic_docs) || return 1
   prompt_text=$(cat "$prompt_file")
+  system_prompt="$skill_docs"
 
-  log "START $prompt_name-$skill"
+  # Harness mode: append harness instructions + install agent
+  if [ "$mode" = "harness" ]; then
+    local harness_instructions agents_dir="$SCRIPT_DIR/.claude/agents"
+    harness_instructions=$(cat "$REPO_ROOT/CLAUDE.md")
+    system_prompt="${system_prompt}
 
-  claude --print \
-    --system-prompt "$skill_docs" \
-    --allowedTools "Bash Write Read Glob Grep" \
-    --max-budget-usd "$MAX_BUDGET" \
-    -d "$SCRIPT_DIR" \
+---
+
+${harness_instructions}"
+    mkdir -p "$agents_dir"
+    cp "$CLAUDE_DIR/agents/pptx-qa.md" "$agents_dir/pptx-qa.md"
+  fi
+
+  build_claude_args "$mode"
+  log "START ${prompt_name}-${tag} — ${CLAUDE_CMD} ${CLAUDE_ARGS[*]}"
+
+  local exit_code=0
+  (cd "$SCRIPT_DIR" && $CLAUDE_CMD "${CLAUDE_ARGS[@]}" \
+    --system-prompt "$system_prompt" \
     "${prompt_text}
 
 Generate the deck as a Node.js script using pptxgenjs (already installed in node_modules/).
-Write the generator to generators/${prompt_name}-${skill}.js, run it, and save the .pptx to outputs/${prompt_name}-${skill}.pptx.
-Do not install any packages — pptxgenjs is pre-installed. Use require('pptxgenjs') — it resolves from node_modules/." \
-    > "$log_file" 2>&1
+Write the generator to generators/${prompt_name}-${tag}.js, run it, and save the .pptx to outputs/${prompt_name}-${tag}.pptx.
+Do not install any packages — pptxgenjs is pre-installed. Use require('pptxgenjs') — it resolves from node_modules/.
+If soffice or pdftoppm are not found, install them (apt install -y libreoffice poppler-utils). Use them to render and visually verify the output.") \
+    > "$log_file" 2>&1 || exit_code=$?
 
-  local exit_code=$?
+  # Harness cleanup
+  if [ "$mode" = "harness" ]; then
+    rm -f "$SCRIPT_DIR/.claude/agents/pptx-qa.md"
+    rmdir "$SCRIPT_DIR/.claude/agents" 2>/dev/null || true
+    rmdir "$SCRIPT_DIR/.claude" 2>/dev/null || true
+  fi
+
   if [ $exit_code -eq 0 ] && [ -f "$output_file" ]; then
-    log "DONE $prompt_name-$skill — $output_file"
+    log "DONE ${prompt_name}-${tag} — $output_file"
   else
-    log "FAIL $prompt_name-$skill (exit=$exit_code) — see $log_file"
+    log "FAIL ${prompt_name}-${tag} (exit=$exit_code) — see $log_file"
   fi
 }
 
-cmd_generate() {
-  local filter="${1:-}"
-
-  # Verify setup
-  if [ ! -d "$VENDOR_DIR" ]; then
-    log "ERROR: Run '$0 setup' first"
-    exit 1
+cmd_run() {
+  local mode="$1" filter="${2:-}"
+  if [ ! -d "$VENDOR_DIR" ]; then log "ERROR: Run '$0 setup' first"; exit 1; fi
+  if [ "$mode" = "harness" ] && [ ! -f "$CLAUDE_DIR/agents/pptx-qa.md" ]; then
+    log "ERROR: .claude/agents/pptx-qa.md not found"; exit 1
   fi
 
+  local pids=()
   for prompt_name in "${PROMPTS[@]}"; do
-    # Filter to specific prompt if requested
-    if [ -n "$filter" ] && [[ "$prompt_name" != *"$filter"* ]]; then
-      continue
-    fi
-
-    log "=== Prompt: $prompt_name ==="
-
-    # Launch all 3 skills in parallel for this prompt
-    local pids=()
-    for skill in "${SKILLS[@]}"; do
-      run_one "$skill" "$prompt_name" &
+    if [ -n "$filter" ] && [[ "$prompt_name" != *"$filter"* ]]; then continue; fi
+    if [ "$PARALLEL" = "true" ]; then
+      run_one "$mode" "$prompt_name" &
       pids+=($!)
-    done
-
-    # Wait for all 3 to finish
-    local any_failed=0
-    for pid in "${pids[@]}"; do
-      wait "$pid" || any_failed=1
-    done
-
-    if [ "$any_failed" -eq 1 ]; then
-      log "WARNING: Some skills failed for $prompt_name — check logs"
+    else
+      run_one "$mode" "$prompt_name"
     fi
   done
 
-  log "Generation complete."
+  if [ "${#pids[@]}" -gt 0 ]; then
+    local any_failed=0
+    for pid in "${pids[@]}"; do wait "$pid" || any_failed=1; done
+    [ "$any_failed" -eq 1 ] && log "WARNING: some prompts failed — check logs"
+  fi
+  log "${mode} run complete."
 }
 
 cmd_render() {
   log "Rendering all PPTX files to images..."
-
   for pptx in "$OUTPUTS_DIR"/*.pptx; do
     [ -f "$pptx" ] || continue
     local base
     base=$(basename "$pptx" .pptx)
-
-    # Skip if already rendered
     if ls "$OUTPUTS_DIR"/${base}-slide-*.jpg 1>/dev/null 2>&1; then
-      log "SKIP render $base — images exist"
-      continue
+      log "SKIP render $base — images exist"; continue
     fi
-
     log "Rendering $base..."
     soffice --headless --convert-to pdf "$pptx" --outdir "$OUTPUTS_DIR" 2>/dev/null || {
-      log "FAIL render $base"
-      continue
+      log "FAIL render $base"; continue
     }
-
     local pdf_file="$OUTPUTS_DIR/$base.pdf"
     if [ -f "$pdf_file" ]; then
-      pdftoppm -jpeg -r 150 "$pdf_file" "$OUTPUTS_DIR/${base}-slide"
+      pdftoppm -jpeg -r 150 "$pdf_file" "$OUTPUTS_DIR/${base}-slide" 2>/dev/null || {
+        log "FAIL pdftoppm $base"; continue
+      }
       local count
       count=$(ls "$OUTPUTS_DIR"/${base}-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
       log "DONE render $base — $count slides"
@@ -229,70 +289,75 @@ cmd_render() {
 cmd_summary() {
   echo ""
   echo "============================================"
-  echo "  BAKEOFF RESULTS"
+  echo "  BAKEOFF RESULTS — with vs without harness"
   echo "============================================"
   echo ""
 
-  for prompt_name in "${PROMPTS[@]}"; do
-    echo "### $prompt_name"
-    echo ""
-    printf "  %-18s %8s %8s\n" "Skill" "PPTX" "Slides"
-    printf "  %-18s %8s %8s\n" "-----" "----" "------"
+  printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "Prompt" "no-QA pptx" "no-QA slides" "no-QA renders?" "harness pptx" "harness slides" "harness renders?"
+  printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "------" "----------" "------------" "--------------" "------------" "--------------" "----------------"
 
-    for skill in "${SKILLS[@]}"; do
-      local pptx_count=0
-      local slide_count=0
-      [ -f "$OUTPUTS_DIR/${prompt_name}-${skill}.pptx" ] && pptx_count=1
-      slide_count=$(ls "$OUTPUTS_DIR"/${prompt_name}-${skill}-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
-      printf "  %-18s %8s %8s\n" "$skill" "$pptx_count" "$slide_count"
-    done
-    echo ""
+  for prompt_name in "${PROMPTS[@]}"; do
+    local no_pptx=0 no_slides=0 h_pptx=0 h_slides=0
+    [ -f "$OUTPUTS_DIR/${prompt_name}-anthropic.pptx" ] && no_pptx=1
+    no_slides=$(ls "$OUTPUTS_DIR"/${prompt_name}-anthropic-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
+    [ -f "$OUTPUTS_DIR/${prompt_name}-harness.pptx" ] && h_pptx=1
+    h_slides=$(ls "$OUTPUTS_DIR"/${prompt_name}-harness-slide-*.jpg 2>/dev/null | wc -l | tr -d ' ')
+    local no_qa h_qa
+    no_qa=$(grep -c "soffice\|pdftoppm\|QA\|render" "$OUTPUTS_DIR/${prompt_name}-anthropic.log" 2>/dev/null || echo 0)
+    h_qa=$(grep -c "soffice\|pdftoppm\|QA\|render" "$OUTPUTS_DIR/${prompt_name}-harness.log" 2>/dev/null || echo 0)
+    printf "  %-20s %12s %12s %12s %12s %12s %12s\n" "$prompt_name" "$no_pptx" "$no_slides" "${no_qa}hits" "$h_pptx" "$h_slides" "${h_qa}hits"
   done
 
-  echo "To compare visually:"
-  echo "  open $OUTPUTS_DIR/*-deck-builder*.jpg"
-  echo "  open $OUTPUTS_DIR/*-minimax*.jpg"
-  echo "  open $OUTPUTS_DIR/*-anthropic*.jpg"
+  echo ""
+  echo "Generators:"
+  echo "  Without harness: $(ls $GENERATORS_DIR/*-anthropic.js 2>/dev/null | wc -l | tr -d ' ') files"
+  echo "  With harness:    $(ls $GENERATORS_DIR/*-harness.js 2>/dev/null | wc -l | tr -d ' ') files"
   echo ""
   echo "Score the results in: $SCRIPT_DIR/SCORECARD.md"
 }
 
+cmd_all() {
+  local filter="${1:-}"
+  cmd_setup
+  log "=== Phase 1: generate (without harness) ==="
+  cmd_run generate "$filter"
+  log "=== Phase 2: harness (with harness) ==="
+  cmd_run harness "$filter"
+  log "=== Phase 3: render ==="
+  cmd_render
+  cmd_summary
+}
+
 cmd_clean() {
-  log "Cleaning generated outputs..."
+  log "Cleaning outputs and generators..."
   rm -f "$OUTPUTS_DIR"/*.pptx "$OUTPUTS_DIR"/*.pdf "$OUTPUTS_DIR"/*-slide-*.jpg "$OUTPUTS_DIR"/*.log
   rm -f "$GENERATORS_DIR"/*.js
-  log "Done. Run 'generate' to re-create."
+  log "Done."
 }
 
 # ---- Main ----
 
-case "${1:-help}" in
+case "${1:-all}" in
+  all)      cmd_all "${2:-}" ;;
   setup)    cmd_setup ;;
-  generate) cmd_generate "${2:-}" ;;
+  generate) cmd_run generate "${2:-}" ;;
+  harness)  cmd_run harness "${2:-}" ;;
   render)   cmd_render ;;
   summary)  cmd_summary ;;
-  clean)    cmd_clean ;;
+  clean)    cmd_clean "${2:-}" ;;
   help|*)
     echo "Usage: $0 <command> [args]"
     echo ""
     echo "Commands:"
-    echo "  setup              Clone skill repos from GitHub, install pptxgenjs"
-    echo "  generate [filter]  Generate decks (filter: 'corporate', 'software', etc.)"
-    echo "  render             Convert all PPTX to slide images via LibreOffice"
-    echo "  summary            Print comparison of what was generated"
-    echo "  clean              Remove generated files (keep prompts and deps)"
+    echo "  all      [filter]   Run everything: setup + generate + harness + render + summary"
+    echo "  setup               Clone Anthropic skill, install pptxgenjs"
+    echo "  generate [filter]   Generate decks without harness"
+    echo "  harness  [filter]   Generate decks with harness (QA loop)"
+    echo "  render              Convert PPTX to slide images via LibreOffice"
+    echo "  summary             Print side-by-side comparison"
+    echo "  clean               Remove generated files (keep prompts and deps)"
     echo ""
-    echo "Directory structure:"
-    echo "  prompts/           Input prompts (corporate.md, software.md, strategy.md)"
-    echo "  generators/        Generated scripts ({prompt}-{skill}.js)"
-    echo "  outputs/           Output decks and renders ({prompt}-{skill}.pptx)"
-    echo ""
-    echo "Skills compared:"
-    echo "  deck-builder  — this repo's skill (MIT)"
-    echo "  minimax       — MiniMax pptx-generator from github.com/MiniMax-AI/skills (MIT)"
-    echo "  anthropic     — Anthropic pptx from github.com/anthropics/skills (proprietary)"
-    echo ""
-    echo "Environment variables:"
-    echo "  BAKEOFF_MAX_BUDGET  Max USD per Claude invocation (default: 5)"
+    echo "Config: bakeoff.config.json        (shared defaults)"
+    echo "        bakeoff.config.local.json  (personal overrides, gitignored)"
     ;;
 esac
