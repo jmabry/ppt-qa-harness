@@ -1,6 +1,6 @@
-# ppt-qa-harness
+# pptx-qa
 
-QA harness for PPTX generation with Claude Code and pptxgenjs.
+QA prompt for PPTX generation with Claude Code and pptxgenjs.
 
 ## Generating presentations
 
@@ -10,15 +10,16 @@ Use [Anthropic's pptx skill](https://github.com/anthropics/skills/tree/main/skil
 claude mcp add --transport stdio anthropic-skills -- npx @anthropic-ai/skills pptx
 ```
 
-Or clone it manually and pass as a system prompt — see `bakeoff/run-bakeoff.sh` for an example.
+### Generation rules
 
-## QA harness
+- **Minimum font sizes:** Body text at least 9pt. Text on dark backgrounds at least 11pt. Never shrink to fit — split across slides instead.
+- **Table cell text:** At least 8pt. If a table has too many columns to fit, split it or transpose.
 
-The `pptx-qa` agent **only renders, inspects slides, and returns a bug list** (or `CLEAN`). It does not modify code or regenerate files—you do.
+## QA process
 
-After generating a PPTX file:
+Apply this process after generating a PPTX file, or when QA-ing an existing one.
 
-1. Render slides to images for a quick visual sanity check:
+1. **Render all slides to images:**
    ```bash
    SLIDE_DIR="outputs/<name>-slides"
    mkdir -p "$SLIDE_DIR"
@@ -26,21 +27,24 @@ After generating a PPTX file:
    pdftoppm -jpeg -r 120 "$SLIDE_DIR/<name>.pdf" "$SLIDE_DIR/slide"
    rm "$SLIDE_DIR/<name>.pdf"
    ```
-   Read a sample of the rendered images (e.g. first, middle, last slide). If the
-   deck looks obviously broken (blank slides, wrong layout, far fewer slides than
-   expected), fix the generator and re-run before spending a QA pass.
 
-2. Spawn the `pptx-qa` agent with the output file path.
+2. **Read and inspect every slide image.** Check for:
+   - Text overflow past bounding boxes or slide edges
+   - Table columns clipped at the right edge
+   - Vertical character stacks (letters stacking one-per-line in columns)
+   - Content below the footer line
+   - Blank space (>30% empty lower half with no content reason)
+   - Font size below minimums (body < 9pt; dark background < 11pt)
+   - Garbled headers (letters out of order, mid-word breaks)
+   - Missing chart elements (axes without labels, charts without needed legends)
 
-3. For every issue it reports, fix the generator, re-run it to produce a new PPTX, and re-render the slides (step 1).
+   For large decks (15+ slides), chunk the slides into groups of ~5 and inspect one group at a time to manage context.
 
-4. Re-spawn `pptx-qa` on the new output.
+3. **Fix every issue found**, re-run the generator, re-render, and re-inspect the affected slides.
 
-5. Repeat until `pptx-qa` returns `CLEAN` — **maximum 3 QA iterations**
+4. **Repeat until clean — maximum 3 iterations.** On re-inspection, only re-read slides that had issues (plus their immediate neighbors for context).
 
-6. Only then tell the user the deck is done.
-
-If after 3 iterations issues remain, report what was fixed and what's still outstanding — do not loop further. Do not report success until you have a clean QA pass or have exhausted the iteration limit.
+5. Only declare the deck done when all slides pass inspection, or report what's still outstanding after 3 iterations.
 
 ## Dependencies
 
@@ -53,4 +57,4 @@ sudo apt install libreoffice poppler-utils                # Debian/Ubuntu
 
 ## Bakeoff
 
-The `bakeoff/` directory contains an eval comparing generation with and without the QA harness. See `bakeoff/PROMPT.md` for details.
+The `bakeoff/` directory contains an eval comparing generation with and without this QA prompt. See `bakeoff/PROMPT.md` for details.

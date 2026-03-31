@@ -1,11 +1,3 @@
 {
-  "hooks": {
-    "PostToolUse": [{
-      "matcher": "Bash",
-      "hooks": [{
-        "type": "command",
-        "command": "bash -c 'echo \"$CLAUDE_TOOL_OUTPUT\" | grep -o \"[^ ]*\\.pptx\" | while read f; do [ -f \"$f\" ] && soffice --headless --convert-to pdf \"$f\" --outdir \"$(dirname \"$f\")/\" 2>/dev/null && pdftoppm -jpeg -r 120 \"${f%.pptx}.pdf\" \"${f%.pptx}-slide\" && echo \"QA_RENDERED: $f → $(ls ${f%.pptx}-slide-*.jpg | tr \"\\n\" \" \")\"; done'"
-      }]
-    }]
-  }
+  "hooks": {}
 }
